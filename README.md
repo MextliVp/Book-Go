@@ -1,2 +1,2 @@
-# Book-Go
+# Book-Go AI
 Marina
