@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book&Go AI Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    
+
     <style>
         :root {
             --sidebar-bg: #0B1121;
@@ -14,64 +15,71 @@
             --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
         }
 
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background-color: var(--bg-light); 
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-light);
         }
 
         /* --- Layout Principal --- */
-        .dashboard-wrapper { display: flex; min-height: 100vh; }
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
 
         /* --- Barra Lateral (Sidebar) --- */
-        .sidebar { 
-            width: 260px; 
-            background-color: var(--sidebar-bg); 
-            color: white; 
-            display: flex; 
-            flex-direction: column; 
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
         }
-        .sidebar-link { 
-            color: #94a3b8; 
-            text-decoration: none; 
-            padding: 12px 20px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            border-radius: 8px; 
-            margin: 0 15px 5px; 
-            transition: all 0.3s ease; 
+
+        .sidebar-link {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 8px;
+            margin: 0 15px 5px;
+            transition: all 0.3s ease;
         }
-        .sidebar-link:hover, .sidebar-link.active { 
-            background-color: rgba(255,255,255,0.1); 
-            color: white; 
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
         }
-        .promo-card { 
-            background: linear-gradient(180deg, #2e1065, #1e1b4b); 
-            border-radius: 16px; 
-            padding: 20px; 
-            margin: 40px 15px 20px; 
+
+        .promo-card {
+            background: linear-gradient(180deg, #2e1065, #1e1b4b);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 40px 15px 20px;
         }
 
         /* --- Contenido Principal --- */
-        .main-content { 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            overflow-y: auto; 
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
         }
 
         /* --- Hero Section --- */
         .hero-section {
             background: url('https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=2000') no-repeat center center;
             background-size: cover;
-            min-height: 550px; 
+            min-height: 550px;
             position: relative;
             color: white;
             padding: 30px 50px;
             display: flex;
             flex-direction: column;
         }
-        
+
         /* Texto con gradiente */
         .text-gradient {
             background: var(--primary-gradient);
@@ -79,8 +87,8 @@
             -webkit-text-fill-color: transparent;
             font-weight: 700;
             display: inline-block;
-            line-height: 1.3; 
-            padding-bottom: 5px; 
+            line-height: 1.3;
+            padding-bottom: 5px;
         }
 
         /* --- Buscador Flotante --- */
@@ -88,56 +96,77 @@
             background: white;
             border-radius: 16px;
             padding: 15px 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            margin: -40px 50px 15px 50px; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            margin: -40px 50px 15px 50px;
             position: relative;
             z-index: 10;
         }
 
-        .search-input-group { border-right: 1px solid #e2e8f0; }
-        .search-input-group:last-child { border-right: none; }
+        .search-input-group {
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .search-input-group:last-child {
+            border-right: none;
+        }
 
         /* --- Utilidades --- */
-        .btn-gradient { 
-            background: var(--primary-gradient); 
-            color: white; 
-            border: none; 
+        .btn-gradient {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
         }
-        .btn-gradient:hover { opacity: 0.9; color: white; }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+            color: white;
+        }
+
         /* --- Efectos Hover para Tarjetas --- */
         .hover-lift {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
         .hover-lift:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
         }
     </style>
 </head>
+
 <body>
 
     <div class="dashboard-wrapper">
         <aside class="sidebar py-4">
-    <div class="px-3 mb-5 d-flex align-items-center gap-2">
-        <img src="images/Logo.png" alt="Icono" width="40" style="object-fit: contain; border-radius: 6px;">
-        <span class="fs-4 fw-bold text-nowrap">Book&Go <span class="text-primary">IA</span></span>
-    </div>
-            
+            <div class="px-3 mb-5 d-flex align-items-center gap-2">
+                <img src="images/Logo.png" alt="Icono" width="40" style="object-fit: contain; border-radius: 6px;">
+                <span class="fs-4 fw-bold text-nowrap">Book&Go <span class="text-primary">IA</span></span>
+            </div>
+
             <nav class="d-flex flex-column">
-                <a href="#" class="sidebar-link active" onclick="protectedAction(event, 'Inicio')"><i class="bi bi-house-door"></i> Inicio</a>
-                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Explorar')"><i class="bi bi-compass"></i> Explorar</a>
-                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Itinerarios')"><i class="bi bi-calendar2-week"></i> Itinerarios</a>
-                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Mis Viajes')"><i class="bi bi-luggage"></i> Mis Viajes</a>
-                <a href="opiniones.html" class="sidebar-link" onclick="protectedAction(event, 'Opiniones')"><i class="bi bi-chat-left-text"></i> Opiniones</a>
-                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Perfil')"><i class="bi bi-person"></i> Perfil</a>
-                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Configuración')"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="sidebar-link active" onclick="protectedAction(event, 'Inicio')"><i
+                        class="bi bi-house-door"></i> Inicio</a>
+                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Explorar')"><i
+                        class="bi bi-compass"></i> Explorar</a>
+                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Itinerarios')"><i
+                        class="bi bi-calendar2-week"></i> Itinerarios</a>
+                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Mis Viajes')"><i
+                        class="bi bi-luggage"></i> Mis Viajes</a>
+                <a href="opiniones.html" class="sidebar-link" onclick="protectedAction(event, 'Opiniones')"><i
+                        class="bi bi-chat-left-text"></i> Opiniones</a>
+                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Perfil')"><i class="bi bi-person"></i>
+                    Perfil</a>
+                <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Configuración')"><i
+                        class="bi bi-gear"></i> Configuración</a>
             </nav>
 
             <div class="promo-card text-center">
                 <i class="bi bi-stars fs-3 text-info mb-2"></i>
                 <h6 class="text-white fw-bold">Planifica mejor con nuestra IA</h6>
-                <p class="small text-light opacity-75 mb-3">Recibe recomendaciones personalizadas y vive experiencias únicas.</p>
-                <button class="btn btn-gradient btn-sm w-100 rounded-pill py-2" onclick="protectedAction(event, 'Comenzar Ahora')">Comenzar ahora</button>
+                <p class="small text-light opacity-75 mb-3">Recibe recomendaciones personalizadas y vive experiencias
+                    únicas.</p>
+                <button class="btn btn-gradient btn-sm w-100 rounded-pill py-2"
+                    onclick="protectedAction(event, 'Comenzar Ahora')">Comenzar ahora</button>
             </div>
 
             <div class="mt-auto px-4 pb-2 text-center">
@@ -151,31 +180,42 @@
         </aside>
 
         <main class="main-content">
-            
+
             <section class="hero-section">
-                
+
                 <div class="d-flex justify-content-end mb-5">
-                    
+
                     <div id="logged-out-view" class="d-flex align-items-center">
-                        <button class="btn btn-outline-light rounded-pill px-4 fw-medium shadow-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <button class="btn btn-outline-light rounded-pill px-4 fw-medium shadow-sm"
+                            data-bs-toggle="modal" data-bs-target="#loginModal">
                             <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
                         </button>
                     </div>
 
                     <div id="logged-in-view" class="d-flex align-items-center gap-4 d-none">
                         <i class="bi bi-bell text-white fs-5 position-relative" style="cursor: pointer;">
-                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
                         </i>
                         <div class="dropdown">
-                            <div class="d-flex align-items-center gap-2 text-white dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150" class="rounded-circle border border-2 border-light" width="38" height="38" alt="Sara">
+                            <div class="d-flex align-items-center gap-2 text-white dropdown-toggle" id="userDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"
+                                    class="rounded-circle border border-2 border-light" width="38" height="38"
+                                    alt="Sara">
                                 <span id="NombrePerfil">Hola, Sara</span>
                             </div>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-person me-2 text-muted"></i> Mi Perfil</a></li>
-                                <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-gear me-2 text-muted"></i> Configuración</a></li>
-                                <li><hr class="dropdown-divider"></li>
-<li><a class="dropdown-item text-danger small py-2" href="#" id="btnLogout"><i class="bi bi-box-arrow-left me-2"></i> Cerrar sesión</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3"
+                                aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item small py-2" href="#"><i
+                                            class="bi bi-person me-2 text-muted"></i> Mi Perfil</a></li>
+                                <li><a class="dropdown-item small py-2" href="#"><i
+                                            class="bi bi-gear me-2 text-muted"></i> Configuración</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item text-danger small py-2" href="#" id="btnLogout"><i
+                                            class="bi bi-box-arrow-left me-2"></i> Cerrar sesión</a></li>
                             </ul>
                         </div>
                     </div>
@@ -188,62 +228,69 @@
                         con <span class="text-gradient">Inteligencia Artificial</span>
                     </h1>
                     <p class="lead opacity-75 mb-4 fs-6" style="max-width: 600px;">
-                        Planea viajes increíbles, recibe recomendaciones personalizadas y crea itinerarios perfectos para ti.
+                        Planea viajes increíbles, recibe recomendaciones personalizadas y crea itinerarios perfectos
+                        para ti.
                     </p>
-                    <button class="btn btn-gradient px-4 py-2 rounded-pill fw-medium shadow-sm" onclick="protectedAction(event, 'Crear viaje con IA')">
+                    <button class="btn btn-gradient px-4 py-2 rounded-pill fw-medium shadow-sm"
+                        onclick="protectedAction(event, 'Crear viaje con IA')">
                         <i class="bi bi-stars me-2"></i> Crear mi viaje con IA
                     </button>
                 </div>
             </section>
 
             <div class="search-bar-container">
-    <div class="row align-items-center">
-        <div class="col-md-4 search-input-group d-flex align-items-center gap-3">
-            <i class="bi bi-geo-alt fs-4 text-primary"></i>
-            <div class="w-100">
-                <small class="text-muted fw-semibold">¿A dónde quieres ir?</small>
-                <input type="text" id="inputDestino" class="form-control border-0 p-0 shadow-none fw-medium" placeholder="Buscar destino">
-            </div>
-        </div>
-        <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
-            <i class="bi bi-calendar-event fs-4 text-primary"></i>
-            <div class="w-100">
-                <small class="text-muted fw-semibold">Fecha de inicio</small>
-                <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
-            </div>
-        </div>
-        <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
-            <i class="bi bi-calendar-event fs-4 text-primary"></i>
-            <div class="w-100">
-                <small class="text-muted fw-semibold">Fecha de regreso</small>
-                <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
-            </div>
-        </div>
-        <div class="col-md-2 text-end">
-            <button id="btnBuscar" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold">
-                <i class="bi bi-search me-1"></i> Buscar
-            </button>
-        </div>
-    </div>
-</div>
+                <div class="row align-items-center">
+                    <div class="col-md-4 search-input-group d-flex align-items-center gap-3">
+                        <i class="bi bi-geo-alt fs-4 text-primary"></i>
+                        <div class="w-100">
+                            <small class="text-muted fw-semibold">¿A dónde quieres ir?</small>
+                            <input type="text" id="inputDestino" class="form-control border-0 p-0 shadow-none fw-medium"
+                                placeholder="Buscar destino">
+                        </div>
+                    </div>
+                    <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
+                        <i class="bi bi-calendar-event fs-4 text-primary"></i>
+                        <div class="w-100">
+                            <small class="text-muted fw-semibold">Fecha de inicio</small>
+                            <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
+                        </div>
+                    </div>
+                    <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
+                        <i class="bi bi-calendar-event fs-4 text-primary"></i>
+                        <div class="w-100">
+                            <small class="text-muted fw-semibold">Fecha de regreso</small>
+                            <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        </button>
+                        <button id="btnBuscar" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold">
+                            <i class="bi bi-search me-1"></i> Buscar
+                        </button>
 
-<div class="container-fluid px-5 my-4">
-    <div class="row g-4" id="contenedorCatalogo">
-        </div>
-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid px-5 my-4">
+                <div class="row g-4" id="contenedorCatalogo">
+                </div>
+            </div>
 
             <div class="container-fluid px-5 pb-4 mt-2">
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm rounded-4 h-100 p-2" style="background-color: #f8faff;">
                             <div class="card-body d-flex align-items-center gap-3">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 60px;">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 60px; height: 60px;">
                                     <i class="bi bi-people-fill fs-3"></i>
                                 </div>
                                 <div>
                                     <h4 class="fw-bold text-primary mb-0">500+</h4>
                                     <h6 class="fw-bold mb-1">Viajeros felices</h6>
-                                    <p class="text-muted small mb-0 lh-sm">Personas que ya vivieron la experiencia Book&Go AI</p>
+                                    <p class="text-muted small mb-0 lh-sm">Personas que ya vivieron la experiencia
+                                        Book&Go AI</p>
                                 </div>
                             </div>
                         </div>
@@ -251,13 +298,15 @@
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm rounded-4 h-100 p-2" style="background-color: #f0f7ff;">
                             <div class="card-body d-flex align-items-center gap-3">
-                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 60px;">
+                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 60px; height: 60px;">
                                     <i class="bi bi-globe-americas fs-3"></i>
                                 </div>
                                 <div>
                                     <h4 class="fw-bold text-info mb-0">120+</h4>
                                     <h6 class="fw-bold mb-1">Destinos increíbles</h6>
-                                    <p class="text-muted small mb-0 lh-sm">Lugares únicos en todo el mundo para explorar</p>
+                                    <p class="text-muted small mb-0 lh-sm">Lugares únicos en todo el mundo para explorar
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -265,13 +314,15 @@
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm rounded-4 h-100 p-2" style="background-color: #f0fff4;">
                             <div class="card-body d-flex align-items-center gap-3">
-                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 60px;">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 60px; height: 60px;">
                                     <i class="bi bi-star-fill fs-3"></i>
                                 </div>
                                 <div>
                                     <h4 class="fw-bold text-success mb-0">4.9/5</h4>
                                     <h6 class="fw-bold mb-1">Calificación promedio</h6>
-                                    <p class="text-muted small mb-0 lh-sm">Basado en opiniones reales de nuestros usuarios</p>
+                                    <p class="text-muted small mb-0 lh-sm">Basado en opiniones reales de nuestros
+                                        usuarios</p>
                                 </div>
                             </div>
                         </div>
@@ -280,16 +331,21 @@
             </div>
             <div class="container-fluid px-5 pb-5 mt-5">
                 <div class="row g-5 align-items-center">
-                    
+
                     <div class="col-lg-5 pe-lg-5">
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 mb-3 fw-semibold">SOBRE NOSOTROS</span>
+                        <span
+                            class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 mb-3 fw-semibold">SOBRE
+                            NOSOTROS</span>
                         <h3 class="fw-bold mb-4" style="line-height: 1.3;">
                             Revolucionando la forma en que <span class="text-gradient">descubres el mundo</span>
                         </h3>
                         <p class="text-muted mb-4" style="line-height: 1.7;">
-                            En Book&Go AI fusionamos tu pasión por explorar con el poder de la Inteligencia Artificial. No somos solo una plataforma de viajes, somos tu asistente personal que aprende de ti para diseñar aventuras únicas, ahorrándote horas de estrés y planificación.
+                            En Book&Go AI fusionamos tu pasión por explorar con el poder de la Inteligencia Artificial.
+                            No somos solo una plataforma de viajes, somos tu asistente personal que aprende de ti para
+                            diseñar aventuras únicas, ahorrándote horas de estrés y planificación.
                         </p>
-                        <button class="btn btn-outline-primary rounded-pill px-4 py-2 fw-medium shadow-sm hover-lift" data-bs-toggle="modal" data-bs-target="#historyModal">
+                        <button class="btn btn-outline-primary rounded-pill px-4 py-2 fw-medium shadow-sm hover-lift"
+                            data-bs-toggle="modal" data-bs-target="#historyModal">
                             Conoce nuestra historia <i class="bi bi-arrow-right ms-2"></i>
                         </button>
                     </div>
@@ -298,38 +354,46 @@
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="card border-0 bg-white shadow-sm rounded-4 h-100 p-4 hover-lift">
-                                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 d-inline-flex align-items-center justify-content-center mb-3"
+                                        style="width: 50px; height: 50px;">
                                         <i class="bi bi-stars fs-4"></i>
                                     </div>
                                     <h6 class="fw-bold">IA que te entiende</h6>
-                                    <p class="text-muted small mb-0">Recomendaciones personalizadas según tus gustos, presupuesto y preferencias.</p>
+                                    <p class="text-muted small mb-0">Recomendaciones personalizadas según tus gustos,
+                                        presupuesto y preferencias.</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card border-0 bg-white shadow-sm rounded-4 h-100 p-4 hover-lift">
-                                    <div class="bg-info bg-opacity-10 text-info rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                                    <div class="bg-info bg-opacity-10 text-info rounded-3 d-inline-flex align-items-center justify-content-center mb-3"
+                                        style="width: 50px; height: 50px;">
                                         <i class="bi bi-calendar2-check fs-4"></i>
                                     </div>
                                     <h6 class="fw-bold">Itinerarios perfectos</h6>
-                                    <p class="text-muted small mb-0">Planes de viaje optimizados día a día para ti, sin que tengas que organizar nada.</p>
+                                    <p class="text-muted small mb-0">Planes de viaje optimizados día a día para ti, sin
+                                        que tengas que organizar nada.</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card border-0 bg-white shadow-sm rounded-4 h-100 p-4 hover-lift">
-                                    <div class="bg-success bg-opacity-10 text-success rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                                    <div class="bg-success bg-opacity-10 text-success rounded-3 d-inline-flex align-items-center justify-content-center mb-3"
+                                        style="width: 50px; height: 50px;">
                                         <i class="bi bi-tag fs-4"></i>
                                     </div>
                                     <h6 class="fw-bold">Mejores precios</h6>
-                                    <p class="text-muted small mb-0">Encontramos y comparamos las opciones más amigables para tu cartera.</p>
+                                    <p class="text-muted small mb-0">Encontramos y comparamos las opciones más amigables
+                                        para tu cartera.</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card border-0 bg-white shadow-sm rounded-4 h-100 p-4 hover-lift">
-                                    <div class="bg-primary-subtle text-primary rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                                    <div class="bg-primary-subtle text-primary rounded-3 d-inline-flex align-items-center justify-content-center mb-3"
+                                        style="width: 50px; height: 50px;">
                                         <i class="bi bi-shield-check fs-4"></i>
                                     </div>
                                     <h6 class="fw-bold">Viaje seguro</h6>
-                                    <p class="text-muted small mb-0">Recomendaciones 100% confiables y soporte 24/7 durante toda tu aventura.</p>
+                                    <p class="text-muted small mb-0">Recomendaciones 100% confiables y soporte 24/7
+                                        durante toda tu aventura.</p>
                                 </div>
                             </div>
                         </div>
@@ -342,7 +406,8 @@
             <div class="container-fluid px-5 pb-5">
                 <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
                     <h4 class="fw-bold mb-0">Lo que dicen nuestros viajeros</h4>
-                    <a href="opiniones.html" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Dejar mi opinión <i class="bi bi-pencil-square ms-1"></i></a>
+                    <a href="opiniones.html" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Dejar mi opinión
+                        <i class="bi bi-pencil-square ms-1"></i></a>
                 </div>
 
                 <div class="row g-4" id="realOpinionsContainer">
@@ -353,176 +418,218 @@
                 </div>
             </div>
 
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
-            <div class="modal-content border-0 shadow rounded-4" style="background-color: #0B1121; color: white;">
-                <div class="modal-header border-0 pe-4 pt-4">
-                    <button type="button" class="btn-close btn-close-white ms-auto shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body px-4 pb-4 text-center">
-                    <div class="bg-primary text-white rounded p-2 d-inline-flex mb-3"><i class="bi bi-airplane-fill fs-3"></i></div>
-                    <h4 class="fw-bold mb-4">Book&Go <span class="text-primary">AI</span></h4>
-                    
-                    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-dark rounded-pill" id="authTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active rounded-pill text-white" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-pane" type="button" role="tab">Iniciar Sesión</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link rounded-pill text-white" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-pane" type="button" role="tab">Registrarse</button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="authTabsContent">
-                        
-                        <div class="tab-pane fade show active text-start" id="login-pane" role="tabpanel" aria-labelledby="login-tab">
-                            <div class="mb-3">
-                                <label class="small text-muted mb-1 fw-medium">Correo electrónico</label>
-                                <input type="email" id="loginEmail" class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none" placeholder="correo@ejemplo.com">
-                            </div>
-                            <div class="mb-4">
-                                <label class="small text-muted mb-1 fw-medium">Contraseña</label>
-                                <input type="password" id="loginPassword" class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none" placeholder="••••••••">
-                            </div>
-                            <button id="btn-google" type="button" class="btn btn-outline-primary w-100 mb-3 py-2 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-google" viewBox="0 0 16 16">
-        <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0c2.244 0 4.179.827 5.642 2.237l-2.407 2.407c-.685-.66-1.854-1.428-3.235-1.428-2.393 0-4.342 1.984-4.342 4.428s1.949 4.428 4.342 4.428c2.767 0 3.81-1.984 3.974-3.003H8V6.558z"/>
-    </svg>
-    Iniciar sesión con Google
-</button>
-                            <button id="btnLogin" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold shadow">
-                                Entrar
-                            </button>
+            <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+                    <div class="modal-content border-0 shadow rounded-4"
+                        style="background-color: #0B1121; color: white;">
+                        <div class="modal-header border-0 pe-4 pt-4">
+                            <button type="button" class="btn-close btn-close-white ms-auto shadow-none"
+                                data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
+                        <div class="modal-body px-4 pb-4 text-center">
+                            <div class="bg-primary text-white rounded p-2 d-inline-flex mb-3"><i
+                                    class="bi bi-airplane-fill fs-3"></i></div>
+                            <h4 class="fw-bold mb-4">Book&Go <span class="text-primary">AI</span></h4>
 
-                        <div class="tab-pane fade text-start" id="register-pane" role="tabpanel" aria-labelledby="register-tab">
-                            <div class="mb-3">
-                                <label class="small text-muted mb-1 fw-medium">Correo electrónico</label>
-                                <input type="email" id="registerEmail" class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none" placeholder="correo@ejemplo.com">
-                            </div>
-                            <div class="mb-4">
-                                <label class="small text-muted mb-1 fw-medium">Crea una contraseña</label>
-                                <input type="password" id="registerPassword" class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none" placeholder="Mínimo 6 caracteres">
-                            </div>
-                            <button id="btnRegister" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold shadow">
-                                Crear cuenta
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="authErrorMsg" class="text-danger small mt-3 d-none"></div>
+                            <ul class="nav nav-pills nav-fill mb-4 p-1 bg-dark rounded-pill" id="authTabs"
+                                role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active rounded-pill text-white" id="login-tab"
+                                        data-bs-toggle="tab" data-bs-target="#login-pane" type="button"
+                                        role="tab">Iniciar Sesión</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link rounded-pill text-white" id="register-tab"
+                                        data-bs-toggle="tab" data-bs-target="#register-pane" type="button"
+                                        role="tab">Registrarse</button>
+                                </li>
+                            </ul>
 
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow rounded-4" style="background-color: #0B1121; color: white;">
-                <div class="modal-header border-0 pe-4 pt-4">
-                    <h5 class="modal-title fw-bold px-3 pt-2" id="historyModalLabel">Nuestra Historia</h5>
-                    <button type="button" class="btn-close btn-close-white ms-auto shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body px-4 px-md-5 pb-5">
-                    <div class="row align-items-center g-4">
-                        
-                        <div class="col-md-7">
-                            <h4 class="fw-bold mb-3">El inicio de una <span class="text-gradient">nueva aventura</span></h4>
-                            <p class="text-light text-opacity-75 small lh-lg">
-                                Todo comenzó a mediados de 2025, cuando un grupo de apasionados desarrolladores y viajeros frecuentes se cansaron de pasar semanas enteras comparando pestañas, leyendo cientos de reseñas contradictorias y armando itinerarios rígidos en hojas de cálculo. Se dieron cuenta de que viajar es un arte, pero planificar se había convertido en un dolor de cabeza.
-                            </p>
-                            <p class="text-light text-opacity-75 small lh-lg">
-                                Fue entonces cuando nació la idea de **Book&Go AI**: crear un ecosistema inteligente que funcionara como un compañero de viaje experto. Un algoritmo avanzado que no solo automatizara reservas, sino que entendiera de verdad la personalidad, gustos y presupuesto de cada viajero para diseñar rutas únicas en segundos.
-                            </p>
-                        </div>
-                        
-                        <div class="col-md-5 text-center">
-                            <div class="p-4 rounded-4 bg-secondary bg-opacity-10 border border-secondary border-opacity-10">
-                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 64px; height: 64px;">
-                                    <i class="bi bi-rocket-takeoff-fill fs-3"></i>
+                            <div class="tab-content" id="authTabsContent">
+
+                                <div class="tab-pane fade show active text-start" id="login-pane" role="tabpanel"
+                                    aria-labelledby="login-tab">
+                                    <div class="mb-3">
+                                        <label class="small text-muted mb-1 fw-medium">Correo electrónico</label>
+                                        <input type="email" id="loginEmail"
+                                            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+                                            placeholder="correo@ejemplo.com">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="small text-muted mb-1 fw-medium">Contraseña</label>
+                                        <input type="password" id="loginPassword"
+                                            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+                                            placeholder="••••••••">
+                                    </div>
+                                    <button id="btn-google" type="button"
+                                        class="btn btn-outline-primary w-100 mb-3 py-2 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-google" viewBox="0 0 16 16">
+                                            <path
+                                                d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0c2.244 0 4.179.827 5.642 2.237l-2.407 2.407c-.685-.66-1.854-1.428-3.235-1.428-2.393 0-4.342 1.984-4.342 4.428s1.949 4.428 4.342 4.428c2.767 0 3.81-1.984 3.974-3.003H8V6.558z" />
+                                        </svg>
+                                        Iniciar sesión con Google
+                                    </button>
+                                    <button id="btnLogin"
+                                        class="btn btn-gradient w-100 py-2 rounded-pill fw-bold shadow">
+                                        Entrar
+                                    </button>
                                 </div>
-                                <h5 class="fw-bold mb-2" style="font-size: 1rem;">Nuestra Misión</h5>
-                                <p class="text-light text-opacity-50 small mb-0 lh-sm">
-                                    Eliminar el estrés y las barreras de la planificación, permitiendo que las personas se enfoquen en lo único que realmente importa: vivir el destino y coleccionar momentos.
-                                </p>
+
+                                <div class="tab-pane fade text-start" id="register-pane" role="tabpanel"
+                                    aria-labelledby="register-tab">
+                                    <div class="mb-3">
+                                        <label class="small text-muted mb-1 fw-medium">Correo electrónico</label>
+                                        <input type="email" id="registerEmail"
+                                            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+                                            placeholder="correo@ejemplo.com">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="small text-muted mb-1 fw-medium">Crea una contraseña</label>
+                                        <input type="password" id="registerPassword"
+                                            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+                                            placeholder="Mínimo 6 caracteres">
+                                    </div>
+                                    <button id="btnRegister"
+                                        class="btn btn-gradient w-100 py-2 rounded-pill fw-bold shadow">
+                                        Crear cuenta
+                                    </button>
+                                </div>
                             </div>
+
+                            <div id="authErrorMsg" class="text-danger small mt-3 d-none"></div>
+
                         </div>
-
-                    </div>
-
-                    <hr class="border-secondary opacity-20 my-4">
-
-                    <div class="text-center">
-                        <p class="small text-light text-opacity-50 mb-3">Hoy, seguimos evolucionando cada día gracias a los comentarios y la confianza de nuestra comunidad de viajeros.</p>
-                        <button type="button" class="btn btn-gradient rounded-pill px-4 py-2 fw-bold btn-sm shadow" data-bs-dismiss="modal">¡Genial, gracias!</button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+            <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow rounded-4"
+                        style="background-color: #0B1121; color: white;">
+                        <div class="modal-header border-0 pe-4 pt-4">
+                            <h5 class="modal-title fw-bold px-3 pt-2" id="historyModalLabel">Nuestra Historia</h5>
+                            <button type="button" class="btn-close btn-close-white ms-auto shadow-none"
+                                data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body px-4 px-md-5 pb-5">
+                            <div class="row align-items-center g-4">
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                                <div class="col-md-7">
+                                    <h4 class="fw-bold mb-3">El inicio de una <span class="text-gradient">nueva
+                                            aventura</span></h4>
+                                    <p class="text-light text-opacity-75 small lh-lg">
+                                        Todo comenzó a mediados de 2025, cuando un grupo de apasionados desarrolladores
+                                        y viajeros frecuentes se cansaron de pasar semanas enteras comparando pestañas,
+                                        leyendo cientos de reseñas contradictorias y armando itinerarios rígidos en
+                                        hojas de cálculo. Se dieron cuenta de que viajar es un arte, pero planificar se
+                                        había convertido en un dolor de cabeza.
+                                    </p>
+                                    <p class="text-light text-opacity-75 small lh-lg">
+                                        Fue entonces cuando nació la idea de **Book&Go AI**: crear un ecosistema
+                                        inteligente que funcionara como un compañero de viaje experto. Un algoritmo
+                                        avanzado que no solo automatizara reservas, sino que entendiera de verdad la
+                                        personalidad, gustos y presupuesto de cada viajero para diseñar rutas únicas en
+                                        segundos.
+                                    </p>
+                                </div>
 
-<script type="module">
-        // 1. IMPORTS ACTUALIZADOS PARA REALTIME DATABASE
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";  
-        // 2. CONFIGURACIÓN (Con databaseURL incluida)
-        const firebaseConfig = {
-            apiKey: "AIzaSyBY0KCEgBwrKV02kiFTGZLtWOxO9ozzSso",
-            authDomain: "bookandgo-ad08d.firebaseapp.com",
-            databaseURL: "https://bookandgo-ad08d-default-rtdb.firebaseio.com",
-            projectId: "bookandgo-ad08d",
-            storageBucket: "bookandgo-ad08d.firebasestorage.app",
-            messagingSenderId: "772819367761",
-            appId: "1:772819367761:web:5fdf584737cf2ea3ad8570",
-            measurementId: "G-NZKR4SKYC6"
-        };
+                                <div class="col-md-5 text-center">
+                                    <div
+                                        class="p-4 rounded-4 bg-secondary bg-opacity-10 border border-secondary border-opacity-10">
+                                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow"
+                                            style="width: 64px; height: 64px;">
+                                            <i class="bi bi-rocket-takeoff-fill fs-3"></i>
+                                        </div>
+                                        <h5 class="fw-bold mb-2" style="font-size: 1rem;">Nuestra Misión</h5>
+                                        <p class="text-light text-opacity-50 small mb-0 lh-sm">
+                                            Eliminar el estrés y las barreras de la planificación, permitiendo que las
+                                            personas se enfoquen en lo único que realmente importa: vivir el destino y
+                                            coleccionar momentos.
+                                        </p>
+                                    </div>
+                                </div>
 
-        // 3. INICIALIZACIÓN
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app); 
+                            </div>
 
-        // 4. VARIABLES GLOBALES
-        window.isLoggedIn = false;
-        const loginModalElement = document.getElementById('loginModal');
-        const loginModalInstance = new bootstrap.Modal(loginModalElement);
-        const errorMsg = document.getElementById('authErrorMsg');
-        const loggedOutView = document.getElementById('logged-out-view');
-        const loggedInView = document.getElementById('logged-in-view');
-        const opinionsContainer = document.getElementById('realOpinionsContainer');
+                            <hr class="border-secondary opacity-20 my-4">
 
-        // 5. ESCUCHAR OPINIONES DE REALTIME DATABASE
-        // Pedimos las últimas 3 ordenadas por fecha de creación
-        const opinionsRef = query(ref(database, 'opiniones'), orderByChild('createdAt'), limitToLast(3));
-        
-        onValue(opinionsRef, (snapshot) => {
-            opinionsContainer.innerHTML = ''; 
+                            <div class="text-center">
+                                <p class="small text-light text-opacity-50 mb-3">Hoy, seguimos evolucionando cada día
+                                    gracias a los comentarios y la confianza de nuestra comunidad de viajeros.</p>
+                                <button type="button"
+                                    class="btn btn-gradient rounded-pill px-4 py-2 fw-bold btn-sm shadow"
+                                    data-bs-dismiss="modal">¡Genial, gracias!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            if(!snapshot.exists()) {
-                opinionsContainer.innerHTML = `
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+            <script type="module">
+                // 1. IMPORTS ACTUALIZADOS PARA REALTIME DATABASE
+                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+                import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+                import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+                // 2. CONFIGURACIÓN (Con databaseURL incluida)
+                const firebaseConfig = {
+                    apiKey: "AIzaSyBY0KCEgBwrKV02kiFTGZLtWOxO9ozzSso",
+                    authDomain: "bookandgo-ad08d.firebaseapp.com",
+                    databaseURL: "https://bookandgo-ad08d-default-rtdb.firebaseio.com",
+                    projectId: "bookandgo-ad08d",
+                    storageBucket: "bookandgo-ad08d.firebasestorage.app",
+                    messagingSenderId: "772819367761",
+                    appId: "1:772819367761:web:5fdf584737cf2ea3ad8570",
+                    measurementId: "G-NZKR4SKYC6"
+                };
+
+                // 3. INICIALIZACIÓN
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const database = getDatabase(app);
+
+                // 4. VARIABLES GLOBALES
+                window.isLoggedIn = false;
+                const loginModalElement = document.getElementById('loginModal');
+                const loginModalInstance = new bootstrap.Modal(loginModalElement);
+                const errorMsg = document.getElementById('authErrorMsg');
+                const loggedOutView = document.getElementById('logged-out-view');
+                const loggedInView = document.getElementById('logged-in-view');
+                const opinionsContainer = document.getElementById('realOpinionsContainer');
+
+                // 5. ESCUCHAR OPINIONES DE REALTIME DATABASE
+                // Pedimos las últimas 3 ordenadas por fecha de creación
+                const opinionsRef = query(ref(database, 'opiniones'), orderByChild('createdAt'), limitToLast(3));
+
+                onValue(opinionsRef, (snapshot) => {
+                    opinionsContainer.innerHTML = '';
+
+                    if (!snapshot.exists()) {
+                        opinionsContainer.innerHTML = `
                     <div class="col-12 text-center text-muted py-3">
                         <p class="mb-0 small">Aún no hay opiniones de viajeros. ¡Sé el primero en dejar la tuya!</p>
                     </div>`;
-                return;
-            }
+                        return;
+                    }
 
-            // Realtime DB devuelve los datos de más viejo a más nuevo.
-            // Los metemos a un arreglo y le damos la vuelta para que el más nuevo salga primero.
-            const opinionsArray = [];
-            snapshot.forEach((childSnapshot) => {
-                opinionsArray.push(childSnapshot.val());
-            });
-            opinionsArray.reverse();
+                    // Realtime DB devuelve los datos de más viejo a más nuevo.
+                    // Los metemos a un arreglo y le damos la vuelta para que el más nuevo salga primero.
+                    const opinionsArray = [];
+                    snapshot.forEach((childSnapshot) => {
+                        opinionsArray.push(childSnapshot.val());
+                    });
+                    opinionsArray.reverse();
 
-            opinionsArray.forEach((data) => {
-                let starsHtml = '';
-                for (let i = 1; i <= 5; i++) {
-                    starsHtml += i <= data.stars ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
-                }
+                    opinionsArray.forEach((data) => {
+                        let starsHtml = '';
+                        for (let i = 1; i <= 5; i++) {
+                            starsHtml += i <= data.stars ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+                        }
 
-                const cardHtml = `
+                        const cardHtml = `
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
                             <div class="card-body">
@@ -544,95 +651,97 @@
                         </div>
                     </div>
                 `;
-                opinionsContainer.innerHTML += cardHtml;
-            });
-        });
-
-        // 6. CONTROL DE SESIÓN Y LOGIN
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.isLoggedIn = true;
-                loggedOutView.classList.add('d-none');
-                loggedInView.classList.remove('d-none');
-                loginModalInstance.hide(); 
-                document.getElementById("NombrePerfil").textContent = `Hola, ${user.displayName || user.email}`;    
-            } else {
-                window.isLoggedIn = false;
-                loggedOutView.classList.remove('d-none');
-                loggedInView.classList.add('d-none');
-            }
-        });
-
-        document.getElementById('btnRegister').addEventListener('click', () => {
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            errorMsg.classList.add('d-none');
-
-           createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-
-                const db = getDatabase();
-                set(ref(db, 'usuarios/' + user.uid), {
-                    correo: user.email,
-                    fechaRegistro: new Date().toISOString()
-                })
-                .then(() => {
-                    console.log("Usuario guardado con éxito en la base de datos.");
-                })
-                .catch((dbError) => {
-                    console.error("Error al escribir en la base de datos:", dbError);
+                        opinionsContainer.innerHTML += cardHtml;
+                    });
                 });
-            })
-            .catch((error) => {
-                errorMsg.textContent = "Error: " + error.message;
-                errorMsg.classList.remove('d-none');
-            });
-        });
 
-        document.getElementById('btnLogin').addEventListener('click', () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            errorMsg.classList.add('d-none');
-
-            signInWithEmailAndPassword(auth, email, password)
-                .catch((error) => {
-                    errorMsg.textContent = "Credenciales incorrectas o usuario no existe.";
-                    errorMsg.classList.remove('d-none');
+                // 6. CONTROL DE SESIÓN Y LOGIN
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        window.isLoggedIn = true;
+                        loggedOutView.classList.add('d-none');
+                        loggedInView.classList.remove('d-none');
+                        loginModalInstance.hide();
+                        document.getElementById("NombrePerfil").textContent = `Hola, ${user.displayName || user.email}`;
+                    } else {
+                        window.isLoggedIn = false;
+                        loggedOutView.classList.remove('d-none');
+                        loggedInView.classList.add('d-none');
+                    }
                 });
-        });
 
-        document.getElementById('btnLogout').addEventListener('click', (e) => {
-            e.preventDefault();
-            signOut(auth);
-        });
+                document.getElementById('btnRegister').addEventListener('click', () => {
+                    const email = document.getElementById('registerEmail').value;
+                    const password = document.getElementById('registerPassword').value;
+                    errorMsg.classList.add('d-none');
 
-        window.protectedAction = function(event, actionName) {
-            if(event) event.preventDefault();
-            if (!window.isLoggedIn) {
-                loginModalInstance.show(); 
-            } else {
-                alert(`¡Éxito! Ejecutando la acción: "${actionName}" en el Dashboard.`);
-            }
-        };
+                    createUserWithEmailAndPassword(auth, email, password)
+                        .then((userCredential) => {
+                            const user = userCredential.user;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.get('action') === 'loginRequired') {
-            setTimeout(() => { loginModalInstance.show(); }, 500);
-        }
+                            const db = getDatabase();
+                            set(ref(db, 'usuarios/' + user.uid), {
+                                correo: user.email,
+                                fechaRegistro: new Date().toISOString()
+                            })
+                                .then(() => {
+                                    console.log("Usuario guardado con éxito en la base de datos.");
+                                })
+                                .catch((dbError) => {
+                                    console.error("Error al escribir en la base de datos:", dbError);
+                                });
+                        })
+                        .catch((error) => {
+                            errorMsg.textContent = "Error: " + error.message;
+                            errorMsg.classList.remove('d-none');
+                        });
+                });
 
-        loginModalElement.addEventListener('hidden.bs.modal', () => {
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('registerEmail').value = '';
-            document.getElementById('registerPassword').value = '';
-            errorMsg.classList.add('d-none');
-        });
-    </script>
-    <script src="catalogo.js"></script>
+                document.getElementById('btnLogin').addEventListener('click', () => {
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    errorMsg.classList.add('d-none');
+
+                    signInWithEmailAndPassword(auth, email, password)
+                        .catch((error) => {
+                            errorMsg.textContent = "Credenciales incorrectas o usuario no existe.";
+                            errorMsg.classList.remove('d-none');
+                        });
+                });
+
+                document.getElementById('btnLogout').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    signOut(auth);
+                });
+
+                window.protectedAction = function (event, actionName) {
+                    if (event) event.preventDefault();
+                    if (!window.isLoggedIn) {
+                        loginModalInstance.show();
+                    } else {
+                        alert(`¡Éxito! Ejecutando la acción: "${actionName}" en el Dashboard.`);
+                    }
+                };
+
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('action') === 'loginRequired') {
+                    setTimeout(() => { loginModalInstance.show(); }, 500);
+                }
+
+                loginModalElement.addEventListener('hidden.bs.modal', () => {
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    document.getElementById('registerEmail').value = '';
+                    document.getElementById('registerPassword').value = '';
+                    errorMsg.classList.add('d-none');
+                });
+            </script>
+            <script src="catalogo.js"></script>
 </body>
+
 </html>
-            <script type="module" src="app.js"></script>
+<script type="module" src="app.js"></script>
 
 </body>
+
 </html>
