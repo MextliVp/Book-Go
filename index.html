@@ -197,35 +197,40 @@
             </section>
 
             <div class="search-bar-container">
-                <div class="row align-items-center">
-                    <div class="col-md-4 search-input-group d-flex align-items-center gap-3">
-                        <i class="bi bi-geo-alt fs-4 text-primary"></i>
-                        <div class="w-100">
-                            <small class="text-muted fw-semibold">¿A dónde quieres ir?</small>
-                            <input type="text" class="form-control border-0 p-0 shadow-none fw-medium" placeholder="Buscar destino">
-                        </div>
-                    </div>
-                    <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
-                        <i class="bi bi-calendar-event fs-4 text-primary"></i>
-                        <div class="w-100">
-                            <small class="text-muted fw-semibold">Fecha de inicio</small>
-                            <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
-                        </div>
-                    </div>
-                    <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
-                        <i class="bi bi-calendar-event fs-4 text-primary"></i>
-                        <div class="w-100">
-                            <small class="text-muted fw-semibold">Fecha de regreso</small>
-                            <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
-                        </div>
-                    </div>
-                    <div class="col-md-2 text-end">
-                        <button class="btn btn-gradient w-100 py-2 rounded-pill fw-bold" onclick="protectedAction(event, 'Buscar destino')">
-                            <i class="bi bi-search me-1"></i> Buscar
-                        </button>
-                    </div>
-                </div>
+    <div class="row align-items-center">
+        <div class="col-md-4 search-input-group d-flex align-items-center gap-3">
+            <i class="bi bi-geo-alt fs-4 text-primary"></i>
+            <div class="w-100">
+                <small class="text-muted fw-semibold">¿A dónde quieres ir?</small>
+                <input type="text" id="inputDestino" class="form-control border-0 p-0 shadow-none fw-medium" placeholder="Buscar destino">
             </div>
+        </div>
+        <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
+            <i class="bi bi-calendar-event fs-4 text-primary"></i>
+            <div class="w-100">
+                <small class="text-muted fw-semibold">Fecha de inicio</small>
+                <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
+            </div>
+        </div>
+        <div class="col-md-3 search-input-group d-flex align-items-center gap-3 ps-4">
+            <i class="bi bi-calendar-event fs-4 text-primary"></i>
+            <div class="w-100">
+                <small class="text-muted fw-semibold">Fecha de regreso</small>
+                <input type="date" class="form-control border-0 p-0 shadow-none text-muted">
+            </div>
+        </div>
+        <div class="col-md-2 text-end">
+            <button id="btnBuscar" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold">
+                <i class="bi bi-search me-1"></i> Buscar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-5 my-4">
+    <div class="row g-4" id="contenedorCatalogo">
+        </div>
+</div>
 
             <div class="container-fluid px-5 pb-4 mt-2">
                 <div class="row g-4">
@@ -603,5 +608,8 @@
             errorMsg.classList.add('d-none');
         });
     </script>
+    <script src="catalogo.js"></script>
+</body>
+</html>
 </body>
 </html>
