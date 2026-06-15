@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book&Go AI - Mi Perfil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --sidebar-bg: #0B1121;
+            --bg-light: #F8FAFC;
+            --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-light);
+        }
+
+        /* --- Layout Principal --- */
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Barra Lateral (Sidebar) --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-link {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 8px;
+            margin: 0 15px 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            text-align: left;
+            width: calc(100% - 30px);
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* --- Disparador de Perfil/Configuración --- */
+        .user-card-trigger {
+            margin: 0 15px 25px;
+            padding: 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .user-card-trigger:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- Contenedor de Avatar con Cámara --- */
+        .avatar-container {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #6366f1;
+            flex-shrink: 0;
+        }
+        .avatar-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+        }
+        .avatar-container:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        .promo-card {
+            background: linear-gradient(180deg, #2e1065, #1e1b4b);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 40px 15px 20px;
+        }
+
+        /* --- Contenido Principal --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* --- Utilidades --- */
+        .btn-gradient {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+            color: white;
+        }
+
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar py-4">
+            <div class="px-3 mb-4 d-flex align-items-center gap-2">
+                <img src="images/Logo.png" alt="Icono" width="40" style="object-fit: contain; border-radius: 6px;">
+                <span class="fs-4 fw-bold text-nowrap">Book&Go <span class="text-primary">IA</span></span>
+            </div>
+
+            <div class="user-card-trigger d-flex align-items-center gap-3" onclick="switchTab('configuracion')">
+                <div class="avatar-container border border-2 border-light border-opacity-25" onclick="event.stopPropagation();">
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center fw-bold text-white fs-5">
+                        U
+                    </div>
+                    <label class="avatar-overlay">
+                        <i class="bi bi-camera text-white fs-6"></i>
+                        <input type="file" accept="image/*" class="d-none" onchange="alert('Cascarón: Selector de archivo de imagen abierto.')">
+                    </label>
+                </div>
+                <div class="overflow-hidden">
+                    <h6 class="text-white mb-0 text-truncate font-semibold" style="font-size: 0.9rem;">Nombre Usuario</h6>
+                    <small class="text-info block" style="font-size: 0.75rem; cursor: pointer;">Editar cuenta</small>
+                </div>
+            </div>
+
+            <nav class="d-flex flex-column">
+                <button onclick="switchTab('reservaciones')" id="btn-reservaciones" class="sidebar-link active">
+                    <i class="bi bi-calendar2-check"></i> Mis Reservaciones
+                </button>
+                <button onclick="switchTab('preferencias')" id="btn-preferencias" class="sidebar-link">
+                    <i class="bi bi-cpu"></i> Preferencias de IA
+                </button>
+            </nav>
+
+            <div class="promo-card text-center mt-4">
+                <i class="bi bi-stars fs-3 text-info mb-2"></i>
+                <h6 class="text-white fw-bold">Planifica mejor con nuestra IA</h6>
+                <p class="small text-light opacity-75 mb-3">Recibe recomendaciones personalizadas y vive experiencias únicas.</p>
+                <button class="btn btn-gradient btn-sm w-100 rounded-pill py-2">Comenzar ahora</button>
+            </div>
+
+            <div class="mt-auto px-4 pb-2 text-center">
+                <small class="text-muted d-block mb-3" style="font-size: 0.75rem;">© 2026 Book&Go AI</small>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#" class="text-muted"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-muted"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-muted"><i class="bi bi-twitter"></i></a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content p-4 p-md-5">
+
+            <section id="section-reservaciones" class="tab-content">
+                <div class="border-b pb-3 mb-4">
+                    <h2 class="fw-bold text-dark h4 mb-1">Mis Reservaciones</h2>
+                    <p class="text-muted small mb-0">Revisa el estatus de tus reservas de viaje y gestiona tus itinerarios.</p>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-sm">
+                            <thead class="table-light text-uppercase tracking-wider" style="font-size: 0.75rem;">
+                                <tr>
+                                    <th class="px-4 py-3 text-secondary">Destino / Servicio</th>
+                                    <th class="px-4 py-3 text-secondary">Fechas</th>
+                                    <th class="px-4 py-3 text-secondary">Precio</th>
+                                    <th class="px-4 py-3 text-secondary">Estado</th>
+                                    <th class="px-4 py-3 text-end text-secondary">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 0.875rem;">
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 d-inline-flex">
+                                                <i class="bi bi-building fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-bold text-dark d-block">Hotel Grand Oasis Cancún</span>
+                                                <small class="text-muted">ID: BG-2026-89A</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-muted">15 Ago 2026 - 20 Ago 2026</td>
+                                    <td class="px-4 py-3 fw-bold text-dark">$12,450.00 MXN</td>
+                                    <td class="px-4 py-3">
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1.5" style="font-size: 0.75rem;">Confirmado</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-end whitespace-nowrap">
+                                        <button class="btn btn-light btn-sm rounded-pill px-3 fw-medium me-1 shadow-sm border" onclick="alert('Cascarón: Detalles de reservación.')">Ver Detalles</button>
+                                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-medium shadow-sm" onclick="confirm('¿Seguro que deseas cancelar esta reservación?')">Cancelar</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 d-inline-flex">
+                                                <i class="bi bi-airplane fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-bold text-dark d-block">Vuelo Redondo CDMX - Oaxaca</span>
+                                                <small class="text-muted">ID: BG-2026-12B</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-muted">16 Jun 2026</td>
+                                    <td class="px-4 py-3 fw-bold text-dark">$3,800.00 MXN</td>
+                                    <td class="px-4 py-3">
+                                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2.5 py-1.5" style="font-size: 0.75rem;">Próximo</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-end">
+                                        <button class="btn btn-light btn-sm rounded-pill px-3 fw-medium me-1 shadow-sm border" onclick="alert('Cascarón: Detalles de reservación.')">Ver Detalles</button>
+                                        <button class="btn btn-light btn-sm rounded-pill px-3 text-muted border cursor-not-allowed shadow-none" disabled title="No es posible cancelar con menos de 48 horas de anticipación">Cancelar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-preferencias" class="tab-content d-none">
+                <div class="border-b pb-3 mb-4">
+                    <h2 class="fw-bold text-dark h4 mb-1">Preferencias de IA</h2>
+                    <p class="text-muted small mb-0">Modifica el comportamiento y segmentación del motor inteligente de recomendaciones.</p>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white" style="max-width: 650px;">
+                    <form onsubmit="event.preventDefault(); alert('Cascarón: Preferencias de IA guardadas.');">
+                        <div class="mb-4">
+                            <label class="form-label text-dark fw-bold small">Intereses de Viaje</label>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="p-2 border rounded-3 bg-light bg-opacity-50">
+                                        <div class="form-check">
+                                            <input class="form-check-input shadow-none" type="checkbox" id="int1" checked>
+                                            <label class="form-check-label small" for="int1">Playas y Naturaleza</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 border rounded-3 bg-light bg-opacity-50">
+                                        <div class="form-check">
+                                            <input class="form-check-input shadow-none" type="checkbox" id="int2">
+                                            <label class="form-check-label small" for="int2">Pueblos Mágicos / Cultura</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-dark fw-bold small">Rango de Presupuesto Estimado</label>
+                            <select class="form-select shadow-none py-2.5 rounded-3">
+                                <option value="eco">Económico (Menos de $5,000 MXN)</option>
+                                <option value="mod" selected>Moderado ($5,000 - $15,000 MXN)</option>
+                                <option value="prem">Premium (Más de $15,000 MXN)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-dark fw-bold small">Preferencia de Idioma</label>
+                            <select class="form-select shadow-none py-2.5 rounded-3">
+                                <option value="es" selected>Español (ES)</option>
+                                <option value="en">Inglés (EN)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-gradient px-4 py-2 rounded-pill shadow-sm fw-medium">Guardar Preferencias</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="section-configuracion" class="tab-content d-none">
+                <div class="border-b pb-3 mb-4">
+                    <h2 class="fw-bold text-dark h4 mb-1">Configuración del Perfil</h2>
+                    <p class="text-muted small mb-0">Gestiona tus credenciales de acceso primarias y configuraciones esenciales.</p>
+                </div>
+
+                <div class="row g-4" style="max-width: 900px;">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                            <h4 class="h6 fw-bold mb-3 border-bottom pb-2 text-secondary"><i class="bi bi-person-lines-fill me-2"></i>Datos de Cuenta</h4>
+                            <form onsubmit="event.preventDefault();">
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted mb-1">Nombre Completo</label>
+                                    <input type="text" class="form-control shadow-none rounded-3" value="Irvin Gabriel Muñoz Flores">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted mb-1">Correo Electrónico</label>
+                                    <input type="email" class="form-control bg-light rounded-3 text-muted cursor-not-allowed" value="correo@ejemplo.com" disabled>
+                                </div>
+                                <button type="submit" class="btn btn-dark btn-sm rounded-pill px-4 py-2 mt-2" onclick="alert('Cascarón: Datos personales actualizados.')">Actualizar Datos</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                            <h4 class="h6 fw-bold mb-3 border-bottom pb-2 text-secondary"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad</h4>
+                            <form onsubmit="event.preventDefault();">
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted mb-1">Contraseña Actual</label>
+                                    <input type="password" class="form-control shadow-none rounded-3" placeholder="••••••••">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted mb-1">Nueva Contraseña</label>
+                                    <input type="password" class="form-control shadow-none rounded-3" placeholder="Mínimo 6 caracteres">
+                                </div>
+                                <button type="submit" class="btn btn-gradient btn-sm rounded-pill px-4 py-2 mt-2" onclick="alert('Cascarón: Contraseña cambiada.')">Modificar Contraseña</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            // Ocultar todas las secciones del dashboard
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.add('none', 'd-none');
+            });
+            // Remover el estado activo visual de la barra de navegación lateral
+            document.querySelectorAll('aside nav .sidebar-link').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Mostrar el contenedor de la sección seleccionada
+            document.getElementById(`section-${tabId}`).classList.remove('d-none');
+            
+            // Si el tab se abrió desde el menú de navegación lateral, añade la clase .active
+            const navLink = document.getElementById(`btn-${tabId}`);
+            if (navLink) {
+                navLink.classList.add('active');
+            }
+        }
+    </script>
+</body>
+
+</html>
