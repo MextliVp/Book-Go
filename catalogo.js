@@ -1,5 +1,13 @@
 // Simulador de base de datos estática para el avance de mañana
+// HACK TEMPORAL PARA MAÑANA: Detener cualquier otra alerta en el buscador
+document.addEventListener('click', function(e) {
+    const boton = e.target.closest('#btnBuscarCatalogo') || e.target.closest('#btnBuscar');
+    if (boton) {
+        e.stopPropagation(); // Detiene por completo que el código de tus compañeros se entere del clic
+    }
+}, true); // El 'true' es la clave: atrapa el clic antes que nadie más en la página
 const viajesCatalogo = [
+
     {
         id: 1,
         destino: "filipinas",
