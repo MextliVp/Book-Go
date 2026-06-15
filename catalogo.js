@@ -1,5 +1,5 @@
-// Simulador de base de datos estática para el avance de mañana
 const viajesCatalogo = [
+
     {
         id: 1,
         destino: "filipinas",
