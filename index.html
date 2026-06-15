@@ -476,25 +476,134 @@
                                     </button>
                                 </div>
 
-                                <div class="tab-pane fade text-start" id="register-pane" role="tabpanel"
-                                    aria-labelledby="register-tab">
-                                    <div class="mb-3">
-                                        <label class="small text-muted mb-1 fw-medium">Correo electrónico</label>
-                                        <input type="email" id="registerEmail"
-                                            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
-                                            placeholder="correo@ejemplo.com">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="small text-muted mb-1 fw-medium">Crea una contraseña</label>
-                                        <input type="password" id="registerPassword"
-                                            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
-                                            placeholder="Mínimo 6 caracteres">
-                                    </div>
-                                    <button id="btnRegister"
-                                        class="btn btn-gradient w-100 py-2 rounded-pill fw-bold shadow">
-                                        Crear cuenta
-                                    </button>
-                                </div>
+                               <div class="tab-pane fade text-start" id="register-pane" role="tabpanel" aria-labelledby="register-tab">
+    
+    <h6 class="text-white border-bottom border-secondary pb-2 mb-3 small tracking-wider text-uppercase opacity-75">1. Datos de la Cuenta</h6>
+    
+    <div class="mb-3">
+        <label class="small text-muted mb-1 fw-medium">Nombre completo</label>
+        <input type="text" id="registerNombre"
+            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+            placeholder="Juan Carlos Benítez" required>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mb-3">
+            <label class="small text-muted mb-1 fw-medium">Correo electrónico</label>
+            <input type="email" id="registerEmail"
+                class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+                placeholder="correo@ejemplo.com" required>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="small text-muted mb-1 fw-medium">Edad</label>
+            <input type="number" id="registerEdad" min="1" max="120"
+                class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+                placeholder="Ej: 21" required>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="small text-muted mb-1 fw-medium">Crea una contraseña</label>
+        <input type="password" id="registerPassword"
+            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+            placeholder="Mínimo 6 caracteres" required>
+    </div>
+
+    <h6 class="text-white border-bottom border-secondary pb-2 mb-3 mt-4 small tracking-wider text-uppercase opacity-75">2. Perfil de Viajero</h6>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="small text-muted mb-1 fw-medium">Estilo de viaje</label>
+            <select id="registerEstilo" class="form-select bg-dark border-secondary text-white py-2 px-3 shadow-none">
+                <option value="Aventurero">Aventurero / Mochilero</option>
+                <option value="Cultural">Cultural / Histórico</option>
+                <option value="Relajación">Relajación / Playa</option>
+                <option value="Negocios">Negocios</option>
+                <option value="Familiar">Familiar</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="small text-muted mb-1 fw-medium">Presupuesto estimado</label>
+            <select id="registerPresupuesto" class="form-select bg-dark border-secondary text-white py-2 px-3 shadow-none">
+                <option value="Bajo">Económico (Bajo)</option>
+                <option value="Medio" selected>Estándar (Medio)</option>
+                <option value="Alto">Premium (Alto)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="small text-muted mb-1 fw-medium">Transporte preferido</label>
+            <select id="registerTransporte" class="form-select bg-dark border-secondary text-white py-2 px-3 shadow-none">
+                <option value="Metro / Tren">Metro / Tren</option>
+                <option value="Autobús">Autobús de línea</option>
+                <option value="Avión">Avión</option>
+                <option value="Automóvil">Automóvil propio / Renta</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="small text-muted mb-1 fw-medium">Alojamiento preferido</label>
+            <select id="registerAlojamiento" class="form-select bg-dark border-secondary text-white py-2 px-3 shadow-none">
+                <option value="Hotel">Hotel</option>
+                <option value="Hostal">Hostal / Compartido</option>
+                <option value="Airbnb">Airbnb / Departamento</option>
+                <option value="Ninguno">Sin reserva previa</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="small text-muted mb-1 fw-medium">Duración típica del viaje</label>
+        <select id="registerDuracion" class="form-select bg-dark border-secondary text-white py-2 px-3 shadow-none">
+            <option value="Fin de semana">Fin de semana (1-3 días)</option>
+            <option value="Una semana">Una semana (4-7 días)</option>
+            <option value="Quincena">Quincena (8-15 días)</option>
+            <option value="Larga estancia">Larga estancia (+15 días)</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="small text-muted mb-2 d-block fw-medium">Intereses principales</label>
+        <div class="row g-2 px-1">
+            <div class="col-6">
+                <div class="form-check text-white-50 small">
+                    <input class="form-check-input interes-chk" type="checkbox" value="Museos" id="chkMuseos">
+                    <label class="form-check-label" for="chkMuseos">Museos y Arte</label>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-check text-white-50 small">
+                    <input class="form-check-input interes-chk" type="checkbox" value="Naturaleza" id="chkNaturaleza">
+                    <label class="form-check-label" for="chkNaturaleza">Naturaleza / Eco</label>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-check text-white-50 small">
+                    <input class="form-check-input interes-chk" type="checkbox" value="Gastronomía" id="chkGastro">
+                    <label class="form-check-label" for="chkGastro">Gastronomía local</label>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-check text-white-50 small">
+                    <input class="form-check-input interes-chk" type="checkbox" value="Vida Nocturna" id="chkNocturna">
+                    <label class="form-check-label" for="chkNocturna">Vida Nocturna</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <label class="small text-muted mb-1 fw-medium">Destinos favoritos o planeados</label>
+        <input type="text" id="registerDestinos"
+            class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none"
+            placeholder="Ej: CDMX, París, Cancún (separados por comas)">
+    </div>
+
+    <button id="btnRegister" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold shadow">
+        Crear cuenta
+    </button>
+</div>
                             </div>
 
                             <div id="authErrorMsg" class="text-danger small mt-3 d-none"></div>
@@ -741,7 +850,7 @@
 
 </html>
 <script type="module" src="app.js"></script>
-
+<script type="module" src="Registro.js"></script>
 </body>
 
 </html>
