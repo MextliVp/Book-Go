@@ -169,7 +169,7 @@
                         <div class="dropdown">
                             <div class="d-flex align-items-center gap-2 text-white dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
                                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150" class="rounded-circle border border-2 border-light" width="38" height="38" alt="Sara">
-                                <span class="fw-medium">Hola, Sara</span>
+                                <span id="NombrePerfil">Hola, Sara</span>
                             </div>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-person me-2 text-muted"></i> Mi Perfil</a></li>
@@ -383,6 +383,12 @@
                                 <label class="small text-muted mb-1 fw-medium">Contraseña</label>
                                 <input type="password" id="loginPassword" class="form-control bg-secondary bg-opacity-10 border-secondary text-white py-2 px-3 shadow-none" placeholder="••••••••">
                             </div>
+                            <button id="btn-google" type="button" class="btn btn-outline-primary w-100 mb-3 py-2 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-google" viewBox="0 0 16 16">
+        <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0c2.244 0 4.179.827 5.642 2.237l-2.407 2.407c-.685-.66-1.854-1.428-3.235-1.428-2.393 0-4.342 1.984-4.342 4.428s1.949 4.428 4.342 4.428c2.767 0 3.81-1.984 3.974-3.003H8V6.558z"/>
+    </svg>
+    Iniciar sesión con Google
+</button>
                             <button id="btnLogin" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold shadow">
                                 Entrar
                             </button>
@@ -460,8 +466,7 @@
         // 1. IMPORTS ACTUALIZADOS PARA REALTIME DATABASE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase, ref, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
+        import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";  
         // 2. CONFIGURACIÓN (Con databaseURL incluida)
         const firebaseConfig = {
             apiKey: "AIzaSyBY0KCEgBwrKV02kiFTGZLtWOxO9ozzSso",
@@ -550,6 +555,7 @@
                 loggedOutView.classList.add('d-none');
                 loggedInView.classList.remove('d-none');
                 loginModalInstance.hide(); 
+                document.getElementById("NombrePerfil").textContent = `Hola, ${user.displayName || user.email}`;    
             } else {
                 window.isLoggedIn = false;
                 loggedOutView.classList.remove('d-none');
@@ -562,11 +568,26 @@
             const password = document.getElementById('registerPassword').value;
             errorMsg.classList.add('d-none');
 
-            createUserWithEmailAndPassword(auth, email, password)
-                .catch((error) => {
-                    errorMsg.textContent = "Error: " + error.message;
-                    errorMsg.classList.remove('d-none');
+           createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+
+                const db = getDatabase();
+                set(ref(db, 'usuarios/' + user.uid), {
+                    correo: user.email,
+                    fechaRegistro: new Date().toISOString()
+                })
+                .then(() => {
+                    console.log("Usuario guardado con éxito en la base de datos.");
+                })
+                .catch((dbError) => {
+                    console.error("Error al escribir en la base de datos:", dbError);
                 });
+            })
+            .catch((error) => {
+                errorMsg.textContent = "Error: " + error.message;
+                errorMsg.classList.remove('d-none');
+            });
         });
 
         document.getElementById('btnLogin').addEventListener('click', () => {
@@ -611,5 +632,7 @@
     <script src="catalogo.js"></script>
 </body>
 </html>
+            <script type="module" src="app.js"></script>
+
 </body>
 </html>
