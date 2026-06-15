@@ -1,5 +1,5 @@
-// Simulador de base de datos estática para el avance de mañana
 const viajesCatalogo = [
+
     {
         id: 1,
         destino: "filipinas",
@@ -66,7 +66,7 @@ const viajesCatalogo = [
 ];
 
 // Escuchar el clic en el botón Buscar
-document.getElementById('btnBuscar').addEventListener('click', function(e) {
+document.getElementById('btnBuscarCatalogo').addEventListener('click', function(e) {
     e.preventDefault(); // Evita que recargue la página
 
     const inputDestino = document.getElementById('inputDestino');
