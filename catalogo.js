@@ -26,6 +26,42 @@ const viajesCatalogo = [
         imagen: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&q=80&w=600",
         descripcion: "Un viaje interactivo desde los templos históricos de Kioto hasta los barrios tecnológicos y futuristas de Tokio.",
         duracion: "12 días / 11 noches"
+    },
+    {
+        id: 4,
+        destino: "paris",
+        titulo: "Luces y Romance en París",
+        precio: "$32,500 MXN",
+        imagen: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=600",
+        descripcion: "Recorrido cultural por el Museo del Louvre, la Torre Eiffel y paseos románticos junto al río Sena con itinerario optimizado.",
+        duracion: "7 días / 6 noches"
+    },
+    {
+        id: 5,
+        destino: "nueva york",
+        titulo: "Aventura Urbana en Nueva York",
+        precio: "$28,000 MXN",
+        imagen: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&q=80&w=600",
+        descripcion: "Vive la energía de Times Square, camina por Central Park y disfruta de las mejores obras de Broadway.",
+        duracion: "6 días / 5 noches"
+    },
+    {
+        id: 6,
+        destino: "machu picchu",
+        titulo: "Ruta del Inca en Machu Picchu",
+        precio: "$18,500 MXN",
+        imagen: "https://images.unsplash.com/photo-1587595421260-30c513ef508b?auto=format&fit=crop&q=80&w=600",
+        descripcion: "Descubre los secretos de la civilización Inca en Cusco y maravíllate con la imponente vista de la ciudadela sagrada.",
+        duracion: "8 días / 7 noches"
+    },
+    {
+        id: 7,
+        destino: "roma",
+        titulo: "Historia Viva en Roma",
+        precio: "$29,900 MXN",
+        imagen: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&q=80&w=600",
+        descripcion: "Viaja en el tiempo visitando el Coliseo Romano, el Vaticano y la Fontana di Trevi mientras disfrutas de la gastronomía italiana.",
+        duracion: "7 días / 6 noches"
     }
 ];
 
