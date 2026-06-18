@@ -1,0 +1,37 @@
+.bookgo-chat-launcher,
+.bookgo-chat-window,
+.bookgo-chat-window *{
+  box-sizing:border-box;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.bookgo-chat-launcher{
+  position:fixed;
+  right:22px;
+  bottom:22px;
+  z-index:9999;
+  border:0;
+  outline:0;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px 10px 10px;
+  border-radius:999px;
+  color:#fff;
+  background:linear-gradient(135deg,#6366f1,#a855f7);
+  box-shadow:0 18px 45px rgba(99,102,241,.35);
+  transition:.25s ease;
+}
+.bookgo-chat-launcher:hover{transform:translateY(-3px);box-shadow:0 22px 55px rgba(99,102,241,.45)}
+.bookgo-chat-launcher.hidden{opacity:0;pointer-events:none;transform:translateY(20px) scale(.92)}
+.bookgo-pulse{position:absolute;inset:-5px;border-radius:999px;background:rgba(168,85,247,.25);animation:bookgoPulse 1.7s infinite;z-index:-1}
+@keyframes bookgoPulse{0%{transform:scale(.95);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+.bookgo-launcher-avatar{width:38px;height:38px;border-radius:50%;background:#fff;color:#6366f1;display:grid;place-items:center;font-size:20px;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.bookgo-launcher-text{display:flex;flex-direction:column;align-items:flex-start;font-size:13px;font-weight:800;line-height:1.05;white-space:nowrap}.bookgo-launcher-text small{font-size:11px;font-weight:600;opacity:.86;margin-top:3px}
+.bookgo-chat-window{position:fixed;right:22px;bottom:22px;z-index:9999;width:min(370px,calc(100vw - 28px));height:560px;max-height:calc(100vh - 40px);background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 24px 70px rgba(15,23,42,.28);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(25px) scale(.96);transition:.25s ease;border:1px solid rgba(99,102,241,.14)}
+.bookgo-chat-window.open{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+.bookgo-chat-header{padding:16px;background:linear-gradient(135deg,#0B1121,#312e81 55%,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:space-between}
+.bookgo-agent{display:flex;align-items:center;gap:10px}.bookgo-agent-avatar{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:21px}.bookgo-agent-title{font-weight:900;font-size:15px}.bookgo-agent-subtitle{font-size:12px;opacity:.78}.bookgo-header-actions{display:flex;gap:7px}.bookgo-icon-btn{width:30px;height:30px;border:0;border-radius:10px;background:rgba(255,255,255,.13);color:#fff;cursor:pointer;font-weight:900}.bookgo-icon-btn:hover{background:rgba(255,255,255,.22)}
+.bookgo-chat-messages{flex:1;overflow-y:auto;padding:16px;background:linear-gradient(180deg,#f8faff,#fff)}.bookgo-message{display:flex;margin-bottom:12px}.bookgo-message.user{justify-content:flex-end}.bookgo-bubble{max-width:86%;padding:11px 12px;border-radius:18px;font-size:13px;line-height:1.45;white-space:pre-wrap;box-shadow:0 6px 18px rgba(15,23,42,.06)}.bookgo-message.bot .bookgo-bubble{background:#fff;color:#0f172a;border:1px solid #eef2ff;border-bottom-left-radius:6px}.bookgo-message.user .bookgo-bubble{background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border-bottom-right-radius:6px}.bookgo-time{font-size:10px;opacity:.55;text-align:right;margin-top:6px}.bookgo-card{margin-top:10px;padding:10px;border-radius:15px;background:#f8faff;border:1px solid #e7eaff;white-space:normal}.bookgo-card-title{font-weight:900;margin-bottom:4px;color:#111827}.bookgo-card-meta{font-size:11px;color:#6366f1;font-weight:800;margin-bottom:6px}.bookgo-card-desc{font-size:12px;color:#64748b}.bookgo-card-price{font-size:14px;font-weight:900;color:#7c3aed;margin-top:8px}.bookgo-card-link{display:inline-block;margin-top:8px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#6366f1,#a855f7);padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800}.bookgo-card-img{width:100%;height:92px;object-fit:cover;border-radius:12px;margin-bottom:8px}
+.bookgo-quick-actions{display:flex;gap:7px;overflow-x:auto;padding:10px 12px;border-top:1px solid #eef2ff;background:#fff}.bookgo-chip{border:1px solid #e0e7ff;background:#f8faff;color:#4f46e5;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer}.bookgo-chip:hover{background:#eef2ff}.bookgo-chat-input-area{display:flex;align-items:flex-end;gap:8px;padding:12px;background:#fff;border-top:1px solid #eef2ff}.bookgo-chat-input{flex:1;resize:none;max-height:92px;border:1px solid #e5e7eb;border-radius:16px;padding:10px 12px;outline:0;font-size:13px}.bookgo-chat-input:focus{border-color:#8b5cf6;box-shadow:0 0 0 4px rgba(139,92,246,.10)}.bookgo-send-btn{width:42px;height:42px;border:0;border-radius:15px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;font-weight:900;cursor:pointer}.bookgo-footer{padding:7px 10px;text-align:center;font-size:10px;color:#94a3b8;background:#fff}.bookgo-typing{display:inline-flex;gap:4px;align-items:center}.bookgo-typing span{width:6px;height:6px;background:#8b5cf6;border-radius:50%;animation:bookgoTyping 1s infinite ease-in-out}.bookgo-typing span:nth-child(2){animation-delay:.12s}.bookgo-typing span:nth-child(3){animation-delay:.24s}@keyframes bookgoTyping{0%,80%,100%{transform:translateY(0);opacity:.45}40%{transform:translateY(-4px);opacity:1}}
+@media(max-width:520px){.bookgo-chat-launcher{right:14px;bottom:14px}.bookgo-launcher-text{display:none}.bookgo-chat-window{right:10px;bottom:10px;width:calc(100vw - 20px);height:calc(100vh - 20px);border-radius:20px}}
