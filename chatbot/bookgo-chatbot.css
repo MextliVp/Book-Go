@@ -23,7 +23,7 @@
   transition:.25s ease;
 }
 .bookgo-chat-launcher:hover{transform:translateY(-3px);box-shadow:0 22px 55px rgba(99,102,241,.45)}
-.bookgo-chat-launcher.hidden{opacity:0;pointer-events:none;transform:translateY(20px) scale(.92)}
+.bookgo-chat-launcher.bookgo-launcher-hidden{opacity:0;pointer-events:none;transform:translateY(20px) scale(.92)}
 .bookgo-pulse{position:absolute;inset:-5px;border-radius:999px;background:rgba(168,85,247,.25);animation:bookgoPulse 1.7s infinite;z-index:-1}
 @keyframes bookgoPulse{0%{transform:scale(.95);opacity:.9}100%{transform:scale(1.25);opacity:0}}
 .bookgo-launcher-avatar{width:38px;height:38px;border-radius:50%;background:#fff;color:#6366f1;display:grid;place-items:center;font-size:20px;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
@@ -35,3 +35,121 @@
 .bookgo-chat-messages{flex:1;overflow-y:auto;padding:16px;background:linear-gradient(180deg,#f8faff,#fff)}.bookgo-message{display:flex;margin-bottom:12px}.bookgo-message.user{justify-content:flex-end}.bookgo-bubble{max-width:86%;padding:11px 12px;border-radius:18px;font-size:13px;line-height:1.45;white-space:pre-wrap;box-shadow:0 6px 18px rgba(15,23,42,.06)}.bookgo-message.bot .bookgo-bubble{background:#fff;color:#0f172a;border:1px solid #eef2ff;border-bottom-left-radius:6px}.bookgo-message.user .bookgo-bubble{background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border-bottom-right-radius:6px}.bookgo-time{font-size:10px;opacity:.55;text-align:right;margin-top:6px}.bookgo-card{margin-top:10px;padding:10px;border-radius:15px;background:#f8faff;border:1px solid #e7eaff;white-space:normal}.bookgo-card-title{font-weight:900;margin-bottom:4px;color:#111827}.bookgo-card-meta{font-size:11px;color:#6366f1;font-weight:800;margin-bottom:6px}.bookgo-card-desc{font-size:12px;color:#64748b}.bookgo-card-price{font-size:14px;font-weight:900;color:#7c3aed;margin-top:8px}.bookgo-card-link{display:inline-block;margin-top:8px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#6366f1,#a855f7);padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800}.bookgo-card-img{width:100%;height:92px;object-fit:cover;border-radius:12px;margin-bottom:8px}
 .bookgo-quick-actions{display:flex;gap:7px;overflow-x:auto;padding:10px 12px;border-top:1px solid #eef2ff;background:#fff}.bookgo-chip{border:1px solid #e0e7ff;background:#f8faff;color:#4f46e5;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer}.bookgo-chip:hover{background:#eef2ff}.bookgo-chat-input-area{display:flex;align-items:flex-end;gap:8px;padding:12px;background:#fff;border-top:1px solid #eef2ff}.bookgo-chat-input{flex:1;resize:none;max-height:92px;border:1px solid #e5e7eb;border-radius:16px;padding:10px 12px;outline:0;font-size:13px}.bookgo-chat-input:focus{border-color:#8b5cf6;box-shadow:0 0 0 4px rgba(139,92,246,.10)}.bookgo-send-btn{width:42px;height:42px;border:0;border-radius:15px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;font-weight:900;cursor:pointer}.bookgo-footer{padding:7px 10px;text-align:center;font-size:10px;color:#94a3b8;background:#fff}.bookgo-typing{display:inline-flex;gap:4px;align-items:center}.bookgo-typing span{width:6px;height:6px;background:#8b5cf6;border-radius:50%;animation:bookgoTyping 1s infinite ease-in-out}.bookgo-typing span:nth-child(2){animation-delay:.12s}.bookgo-typing span:nth-child(3){animation-delay:.24s}@keyframes bookgoTyping{0%,80%,100%{transform:translateY(0);opacity:.45}40%{transform:translateY(-4px);opacity:1}}
 @media(max-width:520px){.bookgo-chat-launcher{right:14px;bottom:14px}.bookgo-launcher-text{display:none}.bookgo-chat-window{right:10px;bottom:10px;width:calc(100vw - 20px);height:calc(100vh - 20px);border-radius:20px}}
+
+
+/* Ajuste: solo existe un botón para contraer el chat. */
+.bookgo-close-btn{font-size:18px;line-height:1;display:grid;place-items:center}
+.bookgo-chat-window:not(.open){display:flex}
+
+/* Extras para reservas dentro del chatbot */
+.bookgo-card-night{
+  margin-top:4px;
+  font-size:11px;
+  color:#475569;
+  font-weight:700;
+}
+.bookgo-reserve-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:9px;
+  width:100%;
+  border:0;
+  border-radius:999px;
+  padding:8px 10px;
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(34,197,94,.22);
+}
+.bookgo-reserve-btn:hover{
+  filter:brightness(.96);
+  transform:translateY(-1px);
+}
+
+/* Controles rápidos dentro del flujo de reserva */
+.bookgo-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+.bookgo-action-btn{
+  border:0;
+  border-radius:999px;
+  padding:8px 12px;
+  background:linear-gradient(135deg,#6366f1,#a855f7);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 7px 16px rgba(99,102,241,.20);
+}
+.bookgo-action-btn:hover{
+  transform:translateY(-1px);
+  filter:brightness(.98);
+}
+.bookgo-action-btn.secondary{
+  background:#f1f5f9;
+  color:#475569;
+  box-shadow:none;
+  border:1px solid #e2e8f0;
+}
+.bookgo-date-picker{
+  width:100%;
+  display:grid;
+  gap:8px;
+  background:#f8faff;
+  border:1px solid #e0e7ff;
+  border-radius:16px;
+  padding:10px;
+}
+.bookgo-date-picker label{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  color:#475569;
+  font-size:11px;
+  font-weight:900;
+  white-space:normal;
+}
+.bookgo-date-picker input[type="date"]{
+  width:100%;
+  border:1px solid #dbe3ff;
+  border-radius:12px;
+  padding:9px 10px;
+  color:#111827;
+  background:#fff;
+  font-size:12px;
+  outline:0;
+}
+.bookgo-date-picker input[type="date"]:focus{
+  border-color:#8b5cf6;
+  box-shadow:0 0 0 3px rgba(139,92,246,.12);
+}
+.bookgo-date-submit{
+  border:0;
+  border-radius:12px;
+  padding:10px;
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+}
+.bookgo-date-submit:hover{
+  filter:brightness(.96);
+}
+
+/* Botón para limpiar historial del chat */
+.bookgo-clear-btn{
+  font-size:14px;
+  line-height:1;
+  display:grid;
+  place-items:center;
+}
+.bookgo-clear-btn:hover{
+  background:rgba(255,255,255,.24);
+}
