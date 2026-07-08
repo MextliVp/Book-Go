@@ -105,6 +105,11 @@ if (btnRegister) {
                 nombre: nameInput,
                 correo: emailInput,
                 edad: parseInt(edadInput),
+                // Rol por defecto para todo usuario nuevo. Nunca se debe
+                // permitir que el propio formulario de registro asigne
+                // rol "admin"; eso se cambia manualmente en la consola
+                // de Firebase o desde un panel de administración aparte.
+                rol: "cliente",
                 perfilViajero: {
                     estilo: estiloInput,
                     presupuesto: presupuestoInput,

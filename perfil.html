@@ -353,7 +353,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, get, set, update, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBY0KCEgBwrKV02kiFTGZLtWOxO9ozzSso",
@@ -459,8 +459,11 @@ if (formDatos) {
             // 1. Actualizar el perfil en Firebase Authentication (Nombre)
             await updateProfile(user, { displayName: nuevoNombre });
 
-            // 2. Guardar el resto de los datos en Realtime Database vinculados al UID
-            await set(ref(database, `usuarios/${user.uid}`), {
+            // 2. Guardar el resto de los datos en Realtime Database vinculados al UID.
+            // IMPORTANTE: se usa update() y NO set() para no borrar campos que ya
+            // existen en el nodo (como "rol" o "perfilViajero"), que set()
+            // sobrescribiría por completo.
+            await update(ref(database, `usuarios/${user.uid}`), {
                 nombre: nuevoNombre,
                 correo: user.email,
                 edad: nuevaEdad,

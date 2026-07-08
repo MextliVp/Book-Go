@@ -1,0 +1,40 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "usuarios": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('rol').val() === 'admin')",
+        ".write": "auth != null && auth.uid === $uid",
+        "rol": {
+          ".validate": "(root.child('usuarios').child(auth.uid).child('rol').val() === 'admin') || (!data.exists() && newData.val() === 'cliente') || (newData.val() === data.val())"
+        }
+      }
+    },
+
+    "documentos": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'"
+    },
+
+    "documento_permisos": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'"
+    },
+
+    "reservas": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('rol').val() === 'admin')",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "rag_logs": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('rol').val() === 'admin')",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}

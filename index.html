@@ -7,7 +7,7 @@
         <title>Book&Go AI Dashboard</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="chatbot/bookgo-chatbot.css">
+        <link rel="stylesheet" href="chatbot/chatbot.css">
 
         <style>
             :root {
@@ -686,13 +686,56 @@
                     </div>
                 </div>
 
+                <!-- ===================== Chat Book&Go IA ===================== -->
+                <button id="bgoiaChatToggleBtn" class="bgoia-chat-toggle-btn" type="button">
+                    <i class="bi bi-chat-dots-fill"></i>
+                    ¿Necesitas ayuda con tu viaje? Book&GoIA
+                </button>
+
+                <div id="bgoiaChatWindow" class="bgoia-chat-window">
+                    <div class="bgoia-chat-header">
+                        <div class="bgoia-avatar"><i class="bi bi-robot"></i></div>
+                        <div class="bgoia-title">
+                            <strong>Book&Go IA</strong>
+                            <span><span class="bgoia-status-dot"></span> En línea</span>
+                        </div>
+                        <button id="bgoiaRagModeBtn" class="bgoia-chat-close" type="button"
+                            title="Modo de consulta segura (políticas, tus reservas)" aria-label="Activar consulta segura">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </button>
+                        <button id="bgoiaChatCloseBtn" class="bgoia-chat-close" type="button" aria-label="Cerrar chat">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <div id="bgoiaChatBody" class="bgoia-chat-body">
+                        <div class="bgoia-msg bgoia-msg-bot">
+                            ¡Hola! 👋 Soy Book&Go IA, tu asistente de viajes. ¿En qué puedo ayudarte hoy?
+                        </div>
+                    </div>
+
+                    <form id="bgoiaChatForm" class="bgoia-chat-footer">
+                        <input id="bgoiaChatInput" class="bgoia-chat-input" type="text" placeholder="Escribe tu mensaje..."
+                            autocomplete="off">
+                        <button class="bgoia-chat-send" type="submit" aria-label="Enviar mensaje">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </form>
+                </div>
+                <script src="chatbot/config.js"></script>
+                <script src="chatbot/gemini.js"></script>
+                <script src="chatbot/rapidapi.js"></script>
+                <script src="chatbot/rag-security.js"></script>
+                <script src="chatbot/chatbot.js"></script>
+                <!-- =================== Fin Chat Book&Go IA =================== -->
+
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
                 <script type="module">
                     // 1. IMPORTS ACTUALIZADOS PARA REALTIME DATABASE
                     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
                     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-                    import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+                    import { getDatabase, ref, set, get, push, update, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
                     // 2. CONFIGURACIÓN (Con databaseURL incluida)
                     const firebaseConfig = {
                         apiKey: "AIzaSyBY0KCEgBwrKV02kiFTGZLtWOxO9ozzSso",
@@ -712,6 +755,10 @@
 
                     // 4. VARIABLES GLOBALES
                     window.isLoggedIn = false;
+                    // Se expone para que chatbot.js (script normal, no módulo) pueda guardar reservas
+                    window.bgoiaAuth = auth;
+                    window.bgoiaDb = database;
+                    window.bgoiaFirebaseDbFns = { ref, set, get, push, update };
                     const loginModalElement = document.getElementById('loginModal');
                     const loginModalInstance = new bootstrap.Modal(loginModalElement);
                     const errorMsg = document.getElementById('authErrorMsg');
@@ -856,7 +903,6 @@
                     });
                 </script>
                 <script src="catalogo.js"></script>
-                <script src="chatbot/bookgo-chatbot.js"></script>
     </body>
 
     </html>
