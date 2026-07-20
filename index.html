@@ -159,6 +159,8 @@
                         Perfil</a>
                     <a href="#" class="sidebar-link" onclick="protectedAction(event, 'Configuración')"><i
                             class="bi bi-gear"></i> Configuración</a>
+                    <a href="admin.html" id="adminPanelLink" class="sidebar-link d-none"><i
+                            class="bi bi-shield-lock"></i> Panel de Administración</a>
                 </nav>
 
                 <div class="promo-card text-center">
@@ -446,6 +448,7 @@
                                     </li>
                                 </ul>
 
+                                <div class="tab-content">
                                 <div class="tab-pane fade show active text-start" id="login-pane" role="tabpanel" aria-labelledby="login-tab">
         <div class="mb-3">
             <label class="small text-white mb-1 fw-medium">Correo electrónico</label>
@@ -614,6 +617,7 @@
             Crear cuenta
         </button>
     </div>
+                                </div>
                                 </div>
 
                                 <div id="authErrorMsg" class="text-danger small mt-3 d-none"></div>
@@ -823,45 +827,47 @@
 
                     // 6. CONTROL DE SESIÓN Y LOGIN
                     onAuthStateChanged(auth, (user) => {
-                        if (user) {
+                        // Solo mostramos la vista de "logueado" si además el
+                        // correo ya está verificado; si no, app.js se
+                        // encarga de cerrar la sesión forzosamente, y aquí
+                        // evitamos mostrar por un instante una vista de
+                        // usuario logueado que luego desaparece.
+                        if (user && user.emailVerified) {
                             window.isLoggedIn = true;
                             loggedOutView.classList.add('d-none');
                             loggedInView.classList.remove('d-none');
                             loginModalInstance.hide();
                             document.getElementById("NombrePerfil").textContent = `Hola, ${user.displayName || user.email}`;
+
+                            // Mostramos el enlace al Panel de Administración
+                            // únicamente si el usuario tiene rol 'admin' en
+                            // la base de datos.
+                            const adminLink = document.getElementById('adminPanelLink');
+                            get(ref(database, 'usuarios/' + user.uid + '/rol')).then((snap) => {
+                                if (snap.exists() && snap.val() === 'admin') {
+                                    adminLink.classList.remove('d-none');
+                                } else {
+                                    adminLink.classList.add('d-none');
+                                }
+                            }).catch(() => adminLink.classList.add('d-none'));
                         } else {
                             window.isLoggedIn = false;
                             loggedOutView.classList.remove('d-none');
                             loggedInView.classList.add('d-none');
+                            document.getElementById('adminPanelLink').classList.add('d-none');
                         }
                     });
 
-                    document.getElementById('btnRegister').addEventListener('click', () => {
-                        const email = document.getElementById('registerEmail').value;
-                        const password = document.getElementById('registerPassword').value;
-                        errorMsg.classList.add('d-none');
-
-                        createUserWithEmailAndPassword(auth, email, password)
-                            .then((userCredential) => {
-                                const user = userCredential.user;
-
-                                const db = getDatabase();
-                                set(ref(db, 'usuarios/' + user.uid), {
-                                    correo: user.email,
-                                    fechaRegistro: new Date().toISOString()
-                                })
-                                    .then(() => {
-                                        console.log("Usuario guardado con éxito en la base de datos.");
-                                    })
-                                    .catch((dbError) => {
-                                        console.error("Error al escribir en la base de datos:", dbError);
-                                    });
-                            })
-                            .catch((error) => {
-                                errorMsg.textContent = "Error: " + error.message;
-                                errorMsg.classList.remove('d-none');
-                            });
-                    });
+                    // El registro (btnRegister) se maneja completo en app.js
+                    // (valida contraseña, guarda perfil de viajero, rol,
+                    // envía correo de verificación, etc.). Antes también
+                    // había un manejador de registro aquí mismo escuchando
+                    // el mismo botón, y los dos se disparaban a la vez: el
+                    // de aquí sobrescribía el registro completo con un
+                    // objeto simplificado (solo correo y fecha), perdiendo
+                    // el rol, el perfil de viajero y el estado de
+                    // verificación. Se quitó para evitar esa condición de
+                    // carrera; solo debe existir un dueño de este botón.
 
                     document.getElementById('btnLogin').addEventListener('click', () => {
                         const email = document.getElementById('loginEmail').value;

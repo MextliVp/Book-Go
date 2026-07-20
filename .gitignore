@@ -1,0 +1,13 @@
+# Variables de entorno locales (nunca deben subirse a git).
+# Las llaves reales (GEMINI_API_KEY, RAPIDAPI_KEY) se configuran en:
+# Vercel > tu proyecto > Settings > Environment Variables
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel
+
+# Sistema / editor
+.DS_Store
+node_modules/

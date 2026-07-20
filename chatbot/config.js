@@ -2,15 +2,34 @@
 
 const BGOIA_CONFIG = {
     // --- Gemini API (Google AI Studio) ---
-    GEMINI_API_KEY: "AIzaSyCyYcA4VWef33-Oii19kL4W3czzFi9LwVI",
+    // La API key YA NO vive aquí: las llamadas reales pasan por
+    // /api/gemini.js (función serverless de Vercel), que lee
+    // GEMINI_API_KEY desde las variables de entorno del servidor.
     GEMINI_MODEL: "gemini-2.5-flash", // ajusta si tienes acceso a otro modelo
 
     // --- RapidAPI: Vuelos (Sky-scrapper) ---
-    RAPIDAPI_KEY: "fedacecd36msh2c9c7c35a2e9f33p1e2d2cjsne267569f9396",
+    // La RAPIDAPI_KEY tampoco vive aquí: las llamadas pasan por
+    // /api/rapidapi.js, que lee RAPIDAPI_KEY desde el servidor.
     SKYSCRAPPER_HOST: "sky-scrapper.p.rapidapi.com",
 
     // --- RapidAPI: Hoteles (Booking.com15) ---
     BOOKING_HOST: "booking-com15.p.rapidapi.com",
+
+    // --- Límite de tokens de salida por tipo de respuesta ---
+    // Gemini consume cuota de la API key según los tokens que genera, así
+    // que cada prompt pide solo lo que en verdad necesita. Estos topes ya
+    // asumen que el "pensamiento" interno del modelo está apagado
+    // (thinkingConfig en gemini.js): todo el tope se usa en la respuesta
+    // real. Si de todos modos ves un JSON cortado, gemini.js reintenta una
+    // vez con el doble; si aun así falla, sube el número correspondiente.
+    GEMINI_MAX_TOKENS: {
+        OPCIONES_DESTINO: 700,
+        ITINERARIO: 1400,
+        AEROPUERTO: 300,
+        EVALUAR_VIAJE: 250,
+        RAG: 400,
+        CHARLA: 300
+    },
 };
 
 // ==========================================================

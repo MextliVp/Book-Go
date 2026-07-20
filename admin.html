@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración — Book&Go AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --sidebar-bg: #0B1121;
+            --bg-light: #F8FAFC;
+            --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-light);
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-link {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 8px;
+            margin: 0 15px 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: calc(100% - 30px);
+            text-align: left;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .admin-badge-card {
+            background: linear-gradient(180deg, #2e1065, #1e1b4b);
+            border-radius: 16px;
+            padding: 18px;
+            margin: 30px 15px 20px;
+        }
+
+        /* --- Main --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 32px 40px;
+        }
+
+        .text-gradient {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .btn-gradient {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+            color: white;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eef0f4;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .panel-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eef0f4;
+            overflow: hidden;
+        }
+
+        .nav-pills-admin .nav-link {
+            color: #475569;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 8px 18px;
+        }
+
+        .nav-pills-admin .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        table.admin-table thead th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748b;
+            border-bottom: 2px solid #eef0f4;
+            padding: 14px 16px;
+            white-space: nowrap;
+        }
+
+        table.admin-table tbody td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            font-size: 0.92rem;
+        }
+
+        table.admin-table tbody tr {
+            border-bottom: 1px solid #f1f4f8;
+        }
+
+        table.admin-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .avatar-mini {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .badge-soft {
+            background: #eef2ff;
+            color: #4f46e5;
+            font-weight: 600;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            transition: all 0.15s ease;
+        }
+
+        .icon-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .icon-btn.danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        /* Chat bubbles in conversation modal */
+        .chat-bubble-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .chat-bubble-row.usuario {
+            justify-content: flex-end;
+        }
+
+        .chat-bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .chat-bubble-row.usuario .chat-bubble {
+            background: var(--primary-gradient);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble-row.asistente .chat-bubble {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-bubble small {
+            display: block;
+            opacity: 0.7;
+            font-size: 0.68rem;
+            margin-top: 4px;
+        }
+
+        .session-item {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .session-item:hover {
+            background-color: #f8fafc;
+        }
+
+        #gateScreen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--sidebar-bg);
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===================== PANTALLA DE VERIFICACIÓN / BLOQUEO ===================== -->
+    <div id="gateScreen">
+        <div class="text-center text-white">
+            <div class="spinner-border text-light mb-3" role="status"></div>
+            <p id="gateMessage" class="opacity-75">Verificando permisos de administrador…</p>
+        </div>
+    </div>
+
+    <!-- ===================== PANEL (oculto hasta confirmar rol admin) ===================== -->
+    <div class="dashboard-wrapper d-none" id="adminApp">
+        <aside class="sidebar py-4">
+            <div class="px-3 mb-5 d-flex align-items-center gap-2">
+                <img src="images/Logo.png" alt="Icono" width="40" style="object-fit: contain; border-radius: 6px;">
+                <span class="fs-5 fw-bold text-nowrap">Book&Go <span class="text-primary">IA</span></span>
+            </div>
+
+            <nav class="d-flex flex-column">
+                <a href="index.html" class="sidebar-link"><i class="bi bi-house-door"></i> Volver al sitio</a>
+                <button class="sidebar-link active" data-target="panel-reservas"><i class="bi bi-luggage"></i> Reservas</button>
+                <button class="sidebar-link" data-target="panel-conversaciones"><i class="bi bi-chat-dots"></i> Conversaciones</button>
+            </nav>
+
+            <div class="admin-badge-card text-center">
+                <i class="bi bi-shield-lock fs-3 text-info mb-2"></i>
+                <h6 class="text-white fw-bold mb-1">Modo Administrador</h6>
+                <p class="small text-light opacity-75 mb-2" id="adminEmailLabel">—</p>
+                <button class="btn btn-outline-light btn-sm w-100 rounded-pill py-1" id="btnLogout">Cerrar sesión</button>
+            </div>
+
+            <div class="mt-auto px-4 pb-2 text-center">
+                <small class="text-muted d-block" style="font-size: 0.75rem;">© 2026 Book&Go AI</small>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 class="fw-bold mb-1">Panel de <span class="text-gradient">Administración</span></h2>
+                    <p class="text-muted mb-0">Gestiona las reservas y conversaciones de todos los usuarios.</p>
+                </div>
+                <button class="btn btn-gradient rounded-pill px-4 py-2" id="btnRefresh">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Actualizar datos
+                </button>
+            </div>
+
+            <!-- Tarjetas de resumen -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: var(--primary-gradient);"><i class="bi bi-luggage"></i></div>
+                        <div>
+                            <div class="text-muted small">Reservas totales</div>
+                            <div class="fs-4 fw-bold" id="statReservas">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: #16a34a;"><i class="bi bi-cash-stack"></i></div>
+                        <div>
+                            <div class="text-muted small">Ingresos totales</div>
+                            <div class="fs-4 fw-bold" id="statIngresos">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: #0ea5e9;"><i class="bi bi-chat-dots"></i></div>
+                        <div>
+                            <div class="text-muted small">Conversaciones</div>
+                            <div class="fs-4 fw-bold" id="statConversaciones">—</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: #f59e0b;"><i class="bi bi-people"></i></div>
+                        <div>
+                            <div class="text-muted small">Usuarios activos</div>
+                            <div class="fs-4 fw-bold" id="statUsuarios">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación de secciones -->
+            <ul class="nav nav-pills nav-pills-admin gap-2 mb-3">
+                <li class="nav-item">
+                    <button class="nav-link active" data-target="panel-reservas">
+                        <i class="bi bi-luggage me-1"></i> Reservas
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-target="panel-conversaciones">
+                        <i class="bi bi-chat-dots me-1"></i> Conversaciones
+                    </button>
+                </li>
+            </ul>
+
+            <!-- ===================== PANEL RESERVAS ===================== -->
+            <section id="panel-reservas">
+                <div class="panel-card">
+                    <div class="p-3 border-bottom d-flex gap-2 flex-wrap align-items-center">
+                        <div class="input-group" style="max-width: 320px;">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control border-start-0" id="searchReservas"
+                                placeholder="Buscar por usuario, folio o destino…">
+                        </div>
+                        <span class="text-muted small ms-auto" id="countReservas"></span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Folio</th>
+                                    <th>Destino</th>
+                                    <th>Total</th>
+                                    <th>Fecha</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyReservas">
+                                <!-- filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state d-none" id="emptyReservas">
+                        <i class="bi bi-inbox"></i>
+                        Todavía no hay reservas registradas.
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== PANEL CONVERSACIONES ===================== -->
+            <section id="panel-conversaciones" class="d-none">
+                <div class="panel-card">
+                    <div class="p-3 border-bottom d-flex gap-2 flex-wrap align-items-center">
+                        <div class="input-group" style="max-width: 320px;">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control border-start-0" id="searchConversaciones"
+                                placeholder="Buscar por usuario…">
+                        </div>
+                        <span class="text-muted small ms-auto" id="countConversaciones"></span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th># Sesiones</th>
+                                    <th>Último mensaje</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyConversaciones">
+                                <!-- filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state d-none" id="emptyConversaciones">
+                        <i class="bi bi-chat-square-dots"></i>
+                        Todavía no hay conversaciones registradas.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===================== MODAL: DETALLE DE RESERVA ===================== -->
+    <div class="modal fade" id="modalReserva" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Detalle de la reserva</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalReservaBody">
+                    <!-- contenido dinámico -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: SESIONES DE UN USUARIO ===================== -->
+    <div class="modal fade" id="modalSesiones" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Sesiones de chat — <span id="modalSesionesUsuario"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalSesionesBody">
+                    <!-- lista dinámica de sesiones -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: TRANSCRIPCIÓN DE UNA SESIÓN ===================== -->
+    <div class="modal fade" id="modalTranscripcion" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Transcripción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalTranscripcionBody" style="background:#fafbfc;">
+                    <!-- burbujas dinámicas -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="btnEliminarSesion">
+                        <i class="bi bi-trash me-1"></i> Eliminar esta sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de confirmación -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+        <div id="adminToast" class="toast align-items-center text-white border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="adminToastBody">Listo.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBY0KCEgBwrKV02kiFTGZLtWOxO9ozzSso",
+            authDomain: "bookandgo-ad08d.firebaseapp.com",
+            databaseURL: "https://bookandgo-ad08d-default-rtdb.firebaseio.com",
+            projectId: "bookandgo-ad08d",
+            storageBucket: "bookandgo-ad08d.firebasestorage.app",
+            messagingSenderId: "772819367761",
+            appId: "1:772819367761:web:5fdf584737cf2ea3ad8570",
+            measurementId: "G-NZKR4SKYC6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Estado en memoria de lo que se carga desde Firebase
+        let usuariosMap = {};      // uid -> { nombre, correo, ... }
+        let reservasFlat = [];     // [{ uid, folio, ...datos }]
+        let conversacionesPorUsuario = {}; // uid -> [{ sessionId, mensajes: [...] }]
+
+        // --------------------------------------------------------
+        // Utilidades
+        // --------------------------------------------------------
+        function nombreDeUsuario(uid) {
+            const u = usuariosMap[uid];
+            if (u) return u.nombre || u.correo || uid;
+            if (uid.startsWith('invitado_')) return 'Invitado';
+            return uid;
+        }
+
+        function correoDeUsuario(uid) {
+            const u = usuariosMap[uid];
+            return u ? (u.correo || '') : '';
+        }
+
+        function avatarDeUsuario(uid) {
+            const nombre = nombreDeUsuario(uid);
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=6366f1&color=fff`;
+        }
+
+        function formatoMoneda(valor) {
+            const n = Number(valor) || 0;
+            return n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+        }
+
+        function formatoFecha(iso) {
+            if (!iso) return '—';
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return iso;
+            return d.toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function mostrarToast(mensaje, tipo = 'success') {
+            const toastEl = document.getElementById('adminToast');
+            const body = document.getElementById('adminToastBody');
+            toastEl.classList.remove('bg-success', 'bg-danger');
+            toastEl.classList.add(tipo === 'success' ? 'bg-success' : 'bg-danger');
+            body.textContent = mensaje;
+            new bootstrap.Toast(toastEl, { delay: 2500 }).show();
+        }
+
+        // --------------------------------------------------------
+        // 1. Verificación de acceso: solo usuarios con rol === 'admin'
+        // --------------------------------------------------------
+        onAuthStateChanged(auth, async (user) => {
+            const gateScreen = document.getElementById('gateScreen');
+            const gateMessage = document.getElementById('gateMessage');
+            const adminApp = document.getElementById('adminApp');
+
+            if (!user) {
+                window.location.href = 'index.html?action=loginRequired';
+                return;
+            }
+
+            try {
+                const rolSnap = await get(ref(db, 'usuarios/' + user.uid + '/rol'));
+                const rol = rolSnap.exists() ? rolSnap.val() : null;
+
+                if (rol !== 'admin') {
+                    gateMessage.innerHTML = 'No tienes permisos de administrador para ver esta página.<br><a href="index.html" class="text-info">Volver al inicio</a>';
+                    return;
+                }
+
+                document.getElementById('adminEmailLabel').textContent = user.email;
+                gateScreen.classList.add('d-none');
+                adminApp.classList.remove('d-none');
+                await cargarTodo();
+
+            } catch (err) {
+                console.error('Error verificando permisos de administrador:', err);
+                gateMessage.textContent = 'No se pudo verificar tu rol. Intenta recargar la página.';
+            }
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        });
+
+        // --------------------------------------------------------
+        // 2. Navegación entre secciones (Reservas / Conversaciones)
+        // --------------------------------------------------------
+        document.querySelectorAll('[data-target]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+
+                document.querySelectorAll('[data-target]').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll(`[data-target="${target}"]`).forEach(b => b.classList.add('active'));
+
+                document.getElementById('panel-reservas').classList.toggle('d-none', target !== 'panel-reservas');
+                document.getElementById('panel-conversaciones').classList.toggle('d-none', target !== 'panel-conversaciones');
+            });
+        });
+
+        // --------------------------------------------------------
+        // 3. Carga de datos desde Firebase
+        // --------------------------------------------------------
+        async function cargarTodo() {
+            await Promise.all([cargarUsuarios(), cargarReservas(), cargarConversaciones()]);
+            pintarReservas();
+            pintarConversaciones();
+            pintarResumen();
+        }
+
+        async function cargarUsuarios() {
+            usuariosMap = {};
+            try {
+                const snap = await get(ref(db, 'usuarios'));
+                if (snap.exists()) usuariosMap = snap.val();
+            } catch (err) {
+                console.error('No se pudieron cargar los usuarios:', err);
+            }
+        }
+
+        async function cargarReservas() {
+            reservasFlat = [];
+            try {
+                const snap = await get(ref(db, 'reservas'));
+                if (snap.exists()) {
+                    const data = snap.val();
+                    Object.keys(data).forEach(uid => {
+                        const folios = data[uid] || {};
+                        Object.keys(folios).forEach(folio => {
+                            reservasFlat.push({ uid, folio, ...folios[folio] });
+                        });
+                    });
+                }
+                // Más recientes primero
+                reservasFlat.sort((a, b) => new Date(b.fechaReserva || 0) - new Date(a.fechaReserva || 0));
+            } catch (err) {
+                console.error('No se pudieron cargar las reservas:', err);
+                mostrarToast('No se pudieron cargar las reservas.', 'danger');
+            }
+        }
+
+        async function cargarConversaciones() {
+            conversacionesPorUsuario = {};
+            try {
+                const snap = await get(ref(db, 'conversaciones'));
+                if (snap.exists()) {
+                    const data = snap.val();
+                    Object.keys(data).forEach(uid => {
+                        const sesiones = data[uid] || {};
+                        conversacionesPorUsuario[uid] = Object.keys(sesiones).map(sessionId => {
+                            const mensajesObj = sesiones[sessionId]?.mensajes || {};
+                            const mensajes = Object.keys(mensajesObj)
+                                .map(id => mensajesObj[id])
+                                .sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
+                            return { sessionId, mensajes };
+                        }).sort((a, b) => {
+                            const ta = a.mensajes[a.mensajes.length - 1]?.fecha || '';
+                            const tb = b.mensajes[b.mensajes.length - 1]?.fecha || '';
+                            return new Date(tb) - new Date(ta);
+                        });
+                    });
+                }
+            } catch (err) {
+                console.error('No se pudieron cargar las conversaciones:', err);
+                mostrarToast('No se pudieron cargar las conversaciones.', 'danger');
+            }
+        }
+
+        // --------------------------------------------------------
+        // 4. Resumen (tarjetas superiores)
+        // --------------------------------------------------------
+        function pintarResumen() {
+            document.getElementById('statReservas').textContent = reservasFlat.length;
+            const ingresos = reservasFlat.reduce((acc, r) => acc + (Number(r.total) || 0), 0);
+            document.getElementById('statIngresos').textContent = formatoMoneda(ingresos);
+
+            const totalSesiones = Object.values(conversacionesPorUsuario).reduce((acc, s) => acc + s.length, 0);
+            document.getElementById('statConversaciones').textContent = totalSesiones;
+
+            document.getElementById('statUsuarios').textContent = Object.keys(usuariosMap).length;
+        }
+
+        // --------------------------------------------------------
+        // 5. Sección de Reservas
+        // --------------------------------------------------------
+        function pintarReservas(filtro = '') {
+            const tbody = document.getElementById('tbodyReservas');
+            const empty = document.getElementById('emptyReservas');
+            const f = filtro.trim().toLowerCase();
+
+            const filtradas = reservasFlat.filter(r => {
+                if (!f) return true;
+                const texto = [
+                    nombreDeUsuario(r.uid), correoDeUsuario(r.uid), r.folio, r.destino
+                ].join(' ').toLowerCase();
+                return texto.includes(f);
+            });
+
+            document.getElementById('countReservas').textContent = `${filtradas.length} de ${reservasFlat.length}`;
+
+            tbody.innerHTML = '';
+            empty.classList.toggle('d-none', filtradas.length > 0);
+
+            filtradas.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="${avatarDeUsuario(r.uid)}" class="avatar-mini" alt="">
+                            <div>
+                                <div class="fw-semibold">${nombreDeUsuario(r.uid)}</div>
+                                <div class="text-muted small">${correoDeUsuario(r.uid) || r.uid}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge-soft">${r.folio}</span></td>
+                    <td>${r.destino || '—'}</td>
+                    <td class="fw-semibold">${formatoMoneda(r.total)}</td>
+                    <td class="text-muted">${formatoFecha(r.fechaReserva)}</td>
+                    <td class="text-end">
+                        <button class="icon-btn btn-ver-reserva" title="Ver detalle"><i class="bi bi-eye"></i></button>
+                        <button class="icon-btn danger btn-borrar-reserva" title="Eliminar"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tr.querySelector('.btn-ver-reserva').addEventListener('click', () => abrirDetalleReserva(r));
+                tr.querySelector('.btn-borrar-reserva').addEventListener('click', () => borrarReserva(r));
+                tbody.appendChild(tr);
+            });
+        }
+
+        function abrirDetalleReserva(r) {
+            const body = document.getElementById('modalReservaBody');
+            const vuelo = r.vuelo ? `
+                <p class="mb-1"><strong>Vuelo:</strong> ${r.vuelo.aerolinea || ''} ${r.vuelo.numero || ''}</p>
+            ` : '';
+            const hotel = r.hotel ? `
+                <p class="mb-1"><strong>Hotel:</strong> ${r.hotel.nombre || ''}</p>
+            ` : '';
+            const itinerarioHtml = Array.isArray(r.itinerario)
+                ? r.itinerario.map((dia, i) => `
+                    <div class="mb-2">
+                        <div class="fw-semibold small text-muted">Día ${i + 1}</div>
+                        <div class="small">${Array.isArray(dia?.actividades) ? dia.actividades.join(', ') : JSON.stringify(dia)}</div>
+                    </div>
+                `).join('')
+                : '<p class="text-muted small">Sin itinerario detallado.</p>';
+
+            body.innerHTML = `
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img src="${avatarDeUsuario(r.uid)}" class="avatar-mini" style="width:48px;height:48px;" alt="">
+                    <div>
+                        <div class="fw-bold">${nombreDeUsuario(r.uid)}</div>
+                        <div class="text-muted small">${correoDeUsuario(r.uid) || r.uid}</div>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-6"><span class="text-muted small">Folio</span><div class="fw-semibold">${r.folio}</div></div>
+                    <div class="col-6"><span class="text-muted small">Total</span><div class="fw-semibold">${formatoMoneda(r.total)}</div></div>
+                    <div class="col-6"><span class="text-muted small">Destino</span><div class="fw-semibold">${r.destino || '—'}</div></div>
+                    <div class="col-6"><span class="text-muted small">Opción elegida</span><div class="fw-semibold">${r.opcionElegida || '—'}</div></div>
+                    <div class="col-6"><span class="text-muted small">Origen</span><div class="fw-semibold">${r.origen || '—'}</div></div>
+                    <div class="col-6"><span class="text-muted small">Fecha de reserva</span><div class="fw-semibold">${formatoFecha(r.fechaReserva)}</div></div>
+                </div>
+                ${vuelo}${hotel}
+                <hr>
+                <div class="fw-semibold mb-2">Itinerario</div>
+                ${itinerarioHtml}
+            `;
+            new bootstrap.Modal(document.getElementById('modalReserva')).show();
+        }
+
+        async function borrarReserva(r) {
+            if (!confirm(`¿Eliminar la reserva ${r.folio} de ${nombreDeUsuario(r.uid)}? Esta acción no se puede deshacer.`)) return;
+            try {
+                await remove(ref(db, `reservas/${r.uid}/${r.folio}`));
+                reservasFlat = reservasFlat.filter(x => !(x.uid === r.uid && x.folio === r.folio));
+                pintarReservas(document.getElementById('searchReservas').value);
+                pintarResumen();
+                mostrarToast('Reserva eliminada.');
+            } catch (err) {
+                console.error(err);
+                mostrarToast('No se pudo eliminar la reserva.', 'danger');
+            }
+        }
+
+        document.getElementById('searchReservas').addEventListener('input', (e) => pintarReservas(e.target.value));
+
+        // --------------------------------------------------------
+        // 6. Sección de Conversaciones
+        // --------------------------------------------------------
+        function pintarConversaciones(filtro = '') {
+            const tbody = document.getElementById('tbodyConversaciones');
+            const empty = document.getElementById('emptyConversaciones');
+            const f = filtro.trim().toLowerCase();
+
+            const uids = Object.keys(conversacionesPorUsuario).filter(uid => {
+                if (!f) return true;
+                const texto = `${nombreDeUsuario(uid)} ${correoDeUsuario(uid)}`.toLowerCase();
+                return texto.includes(f);
+            });
+
+            document.getElementById('countConversaciones').textContent = `${uids.length} de ${Object.keys(conversacionesPorUsuario).length} usuarios`;
+
+            tbody.innerHTML = '';
+            empty.classList.toggle('d-none', uids.length > 0);
+
+            uids.forEach(uid => {
+                const sesiones = conversacionesPorUsuario[uid];
+                const ultimoMensaje = sesiones[0]?.mensajes?.[sesiones[0].mensajes.length - 1];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="${avatarDeUsuario(uid)}" class="avatar-mini" alt="">
+                            <div>
+                                <div class="fw-semibold">${nombreDeUsuario(uid)}</div>
+                                <div class="text-muted small">${correoDeUsuario(uid) || uid}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge-soft">${sesiones.length}</span></td>
+                    <td class="text-muted">${ultimoMensaje ? formatoFecha(ultimoMensaje.fecha) : '—'}</td>
+                    <td class="text-end">
+                        <button class="icon-btn btn-ver-sesiones" title="Ver sesiones"><i class="bi bi-eye"></i></button>
+                    </td>
+                `;
+                tr.querySelector('.btn-ver-sesiones').addEventListener('click', () => abrirSesiones(uid));
+                tbody.appendChild(tr);
+            });
+        }
+
+        function abrirSesiones(uid) {
+            document.getElementById('modalSesionesUsuario').textContent = nombreDeUsuario(uid);
+            const body = document.getElementById('modalSesionesBody');
+            const sesiones = conversacionesPorUsuario[uid] || [];
+
+            if (sesiones.length === 0) {
+                body.innerHTML = '<p class="text-muted">Este usuario no tiene sesiones registradas.</p>';
+            } else {
+                body.innerHTML = '';
+                const lista = document.createElement('div');
+                lista.className = 'list-group';
+                sesiones.forEach(s => {
+                    const primero = s.mensajes[0];
+                    const ultimo = s.mensajes[s.mensajes.length - 1];
+                    const item = document.createElement('div');
+                    item.className = 'list-group-item session-item d-flex justify-content-between align-items-center';
+                    item.innerHTML = `
+                        <div>
+                            <div class="fw-semibold small">${s.sessionId}</div>
+                            <div class="text-muted small">${s.mensajes.length} mensajes · ${formatoFecha(primero?.fecha)} → ${formatoFecha(ultimo?.fecha)}</div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    `;
+                    item.addEventListener('click', () => abrirTranscripcion(uid, s));
+                    lista.appendChild(item);
+                });
+                body.appendChild(lista);
+            }
+            new bootstrap.Modal(document.getElementById('modalSesiones')).show();
+        }
+
+        function abrirTranscripcion(uid, sesion) {
+            const body = document.getElementById('modalTranscripcionBody');
+            body.innerHTML = '';
+            sesion.mensajes.forEach(m => {
+                const row = document.createElement('div');
+                row.className = `chat-bubble-row ${m.rol === 'usuario' ? 'usuario' : 'asistente'}`;
+                row.innerHTML = `
+                    <div class="chat-bubble">
+                        ${escapeHtml(m.texto || '')}
+                        <small>${formatoFecha(m.fecha)}</small>
+                    </div>
+                `;
+                body.appendChild(row);
+            });
+
+            const btnEliminar = document.getElementById('btnEliminarSesion');
+            btnEliminar.onclick = async () => {
+                if (!confirm('¿Eliminar esta sesión de chat completa? Esta acción no se puede deshacer.')) return;
+                try {
+                    await remove(ref(db, `conversaciones/${uid}/${sesion.sessionId}`));
+                    conversacionesPorUsuario[uid] = conversacionesPorUsuario[uid].filter(s => s.sessionId !== sesion.sessionId);
+                    bootstrap.Modal.getInstance(document.getElementById('modalTranscripcion'))?.hide();
+                    bootstrap.Modal.getInstance(document.getElementById('modalSesiones'))?.hide();
+                    pintarConversaciones(document.getElementById('searchConversaciones').value);
+                    pintarResumen();
+                    mostrarToast('Sesión eliminada.');
+                } catch (err) {
+                    console.error(err);
+                    mostrarToast('No se pudo eliminar la sesión.', 'danger');
+                }
+            };
+
+            new bootstrap.Modal(document.getElementById('modalTranscripcion')).show();
+        }
+
+        document.getElementById('searchConversaciones').addEventListener('input', (e) => pintarConversaciones(e.target.value));
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // --------------------------------------------------------
+        // 7. Botón de actualizar
+        // --------------------------------------------------------
+        document.getElementById('btnRefresh').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Actualizando…';
+            await cargarTodo();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i> Actualizar datos';
+            mostrarToast('Datos actualizados.');
+        });
+    </script>
+</body>
+
+</html>
