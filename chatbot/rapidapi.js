@@ -18,7 +18,20 @@ async function bgoiaLlamarRapidAPI(host, path, query) {
         body: JSON.stringify({ host, path, query })
     });
     if (!res.ok) {
-        const err = new Error('Llamada a RapidAPI falló: ' + res.status);
+        // Antes solo se guardaba el código de status (ej. "falló: 500"),
+        // lo cual no dice nada útil en consola. Ahora leemos el cuerpo que
+        // ya manda /api/rapidapi.js (campos "error" y "detalle") para saber
+        // la causa real: key faltante, no suscrito al host, cuota agotada,
+        // etc.
+        let detalle = '';
+        try {
+            const body = await res.json();
+            detalle = body?.error ? ` — ${body.error}` : '';
+            if (body?.detalle) detalle += ` (${JSON.stringify(body.detalle).slice(0, 200)})`;
+        } catch (_e) {
+            // El cuerpo no era JSON válido, nos quedamos solo con el status.
+        }
+        const err = new Error('Llamada a RapidAPI falló: ' + res.status + detalle);
         err.status = res.status;
         throw err;
     }
@@ -206,15 +219,21 @@ async function bgoiaBuscarHoteles(destinoQuery, checkin, checkout, presupuesto) 
 
     } catch (err) {
         console.warn("⚠️ Usando hoteles simulados (revisa tu API de hoteles):", err.message);
-        return bgoiaHotelesSimulados(presupuesto);
+        return bgoiaHotelesSimulados(destinoQuery, presupuesto);
     }
 }
 
-function bgoiaHotelesSimulados(presupuesto) {
+// Antes estos 3 hoteles estaban fijos con nombres de Puerto Vallarta
+// ("Marina Vallarta", "Nuevo Vallarta"), así que se notaba muchísimo el
+// fallback cuando el viaje real era a Cancún, Guadalajara, etc. Ahora el
+// nombre se arma con el destino real, para que aunque sea un dato
+// simulado, al menos sea coherente con el viaje que se está armando.
+function bgoiaHotelesSimulados(destinoQuery, presupuesto) {
+    const nombreDestino = (destinoQuery || '').split(',')[0].trim() || 'el centro';
     const base = [
-        { id: "hsim-1", nombre: "Hotel Marina Vallarta", estrellas: 4, precioPorNoche: 1200 },
-        { id: "hsim-2", nombre: "Boutique Zona Romántica", estrellas: 3, precioPorNoche: 950 },
-        { id: "hsim-3", nombre: "Resort Nuevo Vallarta", estrellas: 5, precioPorNoche: 2100 },
+        { id: "hsim-1", nombre: `Hotel Marina ${nombreDestino}`, estrellas: 4, precioPorNoche: 1200 },
+        { id: "hsim-2", nombre: `Boutique Centro ${nombreDestino}`, estrellas: 3, precioPorNoche: 950 },
+        { id: "hsim-3", nombre: `Resort ${nombreDestino}`, estrellas: 5, precioPorNoche: 2100 },
     ];
     const tope = presupuesto || Infinity;
     return base.filter(h => h.precioPorNoche <= tope);
