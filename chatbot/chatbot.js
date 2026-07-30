@@ -889,7 +889,17 @@
             }
 
             case 'CONFIRMANDO_DESTINO': {
-                if (parseAfirmacion(texto)) {
+                if (pareceDudaOComentario(texto)) {
+                    const preguntaPendiente = `¿Armamos tu viaje a ${ctx.destino}?`;
+                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
+                    if (resultado) {
+                        agregarMensajeTexto(preguntaPendiente, 'bot');
+                        agregarRespuestasRapidas([
+                            { label: `Sí, ${ctx.destino}`, texto: 'sí' },
+                            { label: 'No, otro destino', texto: 'no' },
+                        ]);
+                    }
+                } else if (parseAfirmacion(texto)) {
                     agregarMensajeTexto(`Para tu viaje a ${ctx.destino}, aquí tienes 3 opciones:`, 'bot');
                     renderOpcionesDestino(ctx.opciones);
                     ctx.step = 'ESPERANDO_OPCION';
@@ -942,7 +952,21 @@
             }
 
             case 'CONFIRMANDO_ITINERARIO': {
-                if (parseAfirmacion(texto)) {
+                if (pareceDudaOComentario(texto)) {
+                    // Se revisa ANTES que la afirmación a propósito: un
+                    // mensaje como "sisis... funcionaría si vamos 2
+                    // personas?" sí hace match con "parece afirmación" (por
+                    // el "si"), pero eso ignoraría la pregunta real que trae
+                    // el usuario. Primero contestamos la duda/comentario sin
+                    // perder el itinerario ya armado, y volvemos a pedir
+                    // confirmación clara.
+                    const preguntaPendiente = '¿Te parece bien este itinerario?';
+                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
+                    if (resultado) {
+                        agregarMensajeTexto(preguntaPendiente, 'bot');
+                        agregarBotonesConfirmarItinerario();
+                    }
+                } else if (parseAfirmacion(texto)) {
                     if (ctx.origenPrellenado) {
                         // Ya nos dijo desde dónde sale en la charla libre (ej:
                         // "desde Chimalhuacón"): no se lo volvemos a preguntar,
@@ -954,16 +978,6 @@
                     } else {
                         agregarMensajeTexto('¡Perfecto! ¿Desde qué ciudad viajas? (ej: Guadalajara, CDMX, Monterrey)', 'bot');
                         ctx.step = 'ESPERANDO_ORIGEN';
-                    }
-                } else if (pareceDudaOComentario(texto)) {
-                    // Antes de asumir que es una edición al itinerario,
-                    // primero contestamos si es una pregunta/comentario y
-                    // volvemos a preguntar sin perder el itinerario ya armado.
-                    const preguntaPendiente = '¿Te parece bien este itinerario?';
-                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
-                    if (resultado) {
-                        agregarMensajeTexto(preguntaPendiente, 'bot');
-                        agregarBotonesConfirmarItinerario();
                     }
                 } else {
                     await ajustarItinerarioExistente(texto);
