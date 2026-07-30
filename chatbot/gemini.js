@@ -194,10 +194,13 @@ pasamos directo al armado real).
 IMAGEN (campo "imagen_keyword"):
 Si en tu "respuesta" el foco claro es UN destino o lugar concreto (ej. el
 usuario pregunta por Mazatlán, o comparas 2-3 lugares y hay uno principal),
-pon una palabra clave EN INGLÉS para buscar una foto de ese lugar (ej.
-"Mazatlan malecon", "Los Cabos beach"). Dejalo vacío ("") si la respuesta
-no gira en torno a un lugar visualizable (dudas de presupuesto, preguntas
-generales, mensajes fuera de tema, etc.) para no meter una imagen a fuerza.
+pon 1-2 palabras clave EN INGLÉS de ESE lugar (ej. "Mazatlan malecon",
+"Cabo San Lucas arch"). NUNCA combines varios lugares en una sola frase de
+comparación (mal: "Mazatlan Los Cabos comparison"); si estás comparando
+2 lugares y no hay uno más protagonista, deja el campo vacío ("") en vez
+de mezclarlos. Déjalo vacío también si la respuesta no gira en torno a un
+lugar visualizable (dudas de presupuesto, preguntas generales, mensajes
+fuera de tema, etc.).
 
 MUY IMPORTANTE - CONTINUIDAD:
 Tienes abajo el HISTORIAL completo de la conversación hasta ahora. Tenlo en

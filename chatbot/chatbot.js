@@ -128,6 +128,50 @@
         return msg;
     }
 
+    // Gemini a veces responde con markdown ligero (**negritas**, viñetas con
+    // "- " o "* "), sobre todo cuando pedimos comparaciones/tablas en charla
+    // libre. Esto lo convierte a HTML seguro (escapando todo lo demás) para
+    // que se vea bien en vez de mostrar los asteriscos crudos.
+    function escaparHtml(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function formatearMarkdownLigero(texto) {
+        const escapado = escaparHtml(texto || '');
+        const conNegritas = escapado.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        const lineas = conNegritas.split('\n');
+        let html = '';
+        let dentroDeLista = false;
+        lineas.forEach(linea => {
+            const t = linea.trim();
+            const viñeta = /^[-*]\s+(.*)$/.exec(t);
+            if (viñeta) {
+                if (!dentroDeLista) { html += '<ul>'; dentroDeLista = true; }
+                html += `<li>${viñeta[1]}</li>`;
+            } else {
+                if (dentroDeLista) { html += '</ul>'; dentroDeLista = false; }
+                if (t) html += `<p>${t}</p>`;
+            }
+        });
+        if (dentroDeLista) html += '</ul>';
+        return html;
+    }
+
+    // Mensaje del bot que puede traer markdown ligero (usar SOLO para texto
+    // que viene de Gemini en respuesta libre; los mensajes fijos de la UI
+    // siguen usando agregarMensajeTexto normal).
+    function agregarMensajeBotFormateado(texto) {
+        const msg = document.createElement('div');
+        msg.className = 'bgoia-msg bgoia-msg-bot';
+        msg.innerHTML = formatearMarkdownLigero(texto);
+        chatBody.appendChild(msg);
+        scrollAbajo();
+        return msg;
+    }
+
     function agregarBloqueHTML(html) {
         const wrap = document.createElement('div');
         wrap.className = 'bgoia-msg bgoia-msg-bot bgoia-bloque';
@@ -232,17 +276,25 @@
     }
 
     function imagenPara(keyword) {
-        return `https://loremflickr.com/400/240/${encodeURIComponent(keyword)}`;
+        // loremflickr espera tags separados por coma, no por espacio
+        // ("mazatlan,malecon" en vez de "mazatlan malecon"); si nos llega
+        // con espacios (por ejemplo de Gemini) lo convertimos aquí.
+        const tags = (keyword || '').trim().split(/\s+/).filter(Boolean).join(',');
+        return `https://loremflickr.com/400/240/${encodeURIComponent(tags)}`;
     }
 
     // Imagen chica dentro de la charla libre, cuando la respuesta gira en
-    // torno a un lugar concreto (Gemini manda el keyword en inglés).
+    // torno a un lugar concreto (Gemini manda el keyword en inglés). Si la
+    // imagen no carga (servicio caído, keyword raro), el bloque se quita
+    // solo en vez de dejar un hueco vacío o el texto alt suelto.
     function renderImagenCharla(keyword) {
-        agregarBloqueHTML(`
+        const wrap = agregarBloqueHTML(`
             <div class="bgoia-charla-img">
                 <img src="${imagenPara(keyword)}" alt="${keyword}" loading="lazy">
             </div>
         `);
+        const img = wrap.querySelector('img');
+        img.addEventListener('error', () => wrap.remove());
     }
 
     // Tarjeta de "vista previa" de cómo se vería el viaje, con un botón para
@@ -295,7 +347,7 @@
         try {
             const resultado = await BGOIA_RAG.preguntarRAGSeguro(texto);
             ocultarEscribiendo();
-            agregarMensajeTexto(resultado.mensaje, 'bot');
+            agregarMensajeBotFormateado(resultado.mensaje);
             if (resultado.ok && resultado.fuente && resultado.fuente !== 'ninguna') {
                 agregarMensajeTexto('📎 Fuente: ' + resultado.fuente, 'bot');
             }
@@ -517,7 +569,7 @@
             const resultado = await bgoiaInterpretarLibre(construirContextoDestino(texto), texto);
             ocultarEscribiendo();
             if (resultado.respuesta) {
-                agregarMensajeTexto(resultado.respuesta, 'bot');
+                agregarMensajeBotFormateado(resultado.respuesta);
             }
             if (resultado.origen) ctx.origenPrellenado = ctx.origenPrellenado || resultado.origen;
             if (resultado.presupuesto) ctx.presupuestoPrellenado = ctx.presupuestoPrellenado || resultado.presupuesto;
@@ -832,7 +884,7 @@
                 try {
                     const resultado = await bgoiaCharlaLibre(ctx.historialCharla, texto);
                     ocultarEscribiendo();
-                    agregarMensajeTexto(resultado.respuesta, 'bot');
+                    agregarMensajeBotFormateado(resultado.respuesta);
                     if (resultado.imagen_keyword) {
                         renderImagenCharla(resultado.imagen_keyword);
                     }

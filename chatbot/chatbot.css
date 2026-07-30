@@ -198,6 +198,31 @@
     white-space: pre-line;
 }
 
+.bgoia-msg-bot p {
+    margin: 0 0 8px 0;
+}
+
+.bgoia-msg-bot p:last-child {
+    margin-bottom: 0;
+}
+
+.bgoia-msg-bot ul {
+    margin: 0 0 8px 0;
+    padding-left: 18px;
+}
+
+.bgoia-msg-bot ul:last-child {
+    margin-bottom: 0;
+}
+
+.bgoia-msg-bot li {
+    margin-bottom: 3px;
+}
+
+.bgoia-msg-bot strong {
+    color: #4c1d95;
+}
+
 .bgoia-msg-user {
     align-self: flex-end;
     background: linear-gradient(135deg, #6366f1, #a855f7);
