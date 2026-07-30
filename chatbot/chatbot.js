@@ -73,6 +73,8 @@
         // cuando se consumen (ver processarOrigen/processarPresupuesto).
         origenPrellenado: null,
         presupuestoPrellenado: null,
+        diasPrellenados: null,
+        diasViaje: 3, // duración real usada para generar el itinerario y calcular noches de hotel
     };
 
     // Reinicia los campos de un viaje anterior al empezar uno nuevo, para
@@ -96,6 +98,7 @@
         ctx.hotelElegido = null;
         ctx.historialCharla = [];
         ctx.resumenPreferencias = '';
+        ctx.diasViaje = 3;
     }
 
     // --------------------------------------------------------
@@ -380,7 +383,8 @@
         // ctx.vueloElegido es null cuando el viaje no necesitó vuelo
         // (origen y destino cercanos, ver evaluación en ESPERANDO_ORIGEN).
         const totalVuelo = ctx.vueloElegido ? ctx.vueloElegido.precio : 0;
-        const totalHotel = ctx.hotelElegido.precioPorNoche * 3; // 3 noches (itinerario de 3 días)
+        const noches = ctx.diasViaje; // misma convención que antes (3 días -> 3 noches), ahora dinámico
+        const totalHotel = ctx.hotelElegido.precioPorNoche * noches;
         const total = totalItinerario + totalVuelo + totalHotel;
 
         const lineaVuelo = ctx.vueloElegido
@@ -393,7 +397,7 @@
                 <p class="bgoia-resumen-folio">Folio: <strong class="bgoia-folio-valor">generando...</strong></p>
                 <ul>
                     ${lineaVuelo}
-                    <li>🏨 Hotel (${ctx.hotelElegido.nombre}, 3 noches): ${formatoMoneda(totalHotel)}</li>
+                    <li>🏨 Hotel (${ctx.hotelElegido.nombre}, ${noches} noche${noches === 1 ? '' : 's'}): ${formatoMoneda(totalHotel)}</li>
                     <li>🗺️ Actividades del itinerario: ${formatoMoneda(totalItinerario)}</li>
                 </ul>
                 <div class="bgoia-resumen-total">Total estimado: ${formatoMoneda(total)}</div>
@@ -463,6 +467,39 @@
         return /(s[ií]|me parece|bien|perfecto|ok|dale|claro|va|adelante)/i.test(texto);
     }
 
+    // Heurística rápida (sin llamar a Gemini) para detectar que el usuario
+    // probablemente NO está respondiendo lo que se le preguntó, sino
+    // haciendo una pregunta o comentario suyo.
+    function pareceDudaOComentario(texto) {
+        return /\?|¿/.test(texto);
+    }
+
+    // Red de seguridad: se llama SOLO cuando el paso actual ya detectó que
+    // el mensaje no encaja con lo esperado (pregunta, comentario, datos
+    // mezclados, etc.). Contesta la pregunta si aplica, guarda cualquier
+    // dato de viaje que haya mencionado (para no volver a pedirlo después)
+    // y devuelve el resultado para que el paso decida si ya puede avanzar
+    // o si debe repetir amablemente lo que necesita.
+    async function manejarEntradaConfusa(texto, preguntaPendiente, opcionesReintento) {
+        mostrarEscribiendo();
+        try {
+            const resultado = await bgoiaInterpretarLibre(construirContextoDestino(texto), texto);
+            ocultarEscribiendo();
+            if (resultado.respuesta) {
+                agregarMensajeTexto(resultado.respuesta, 'bot');
+            }
+            if (resultado.origen) ctx.origenPrellenado = ctx.origenPrellenado || resultado.origen;
+            if (resultado.presupuesto) ctx.presupuestoPrellenado = ctx.presupuestoPrellenado || resultado.presupuesto;
+            if (resultado.dias) ctx.diasPrellenados = ctx.diasPrellenados || Number(resultado.dias);
+            return resultado;
+        } catch (err) {
+            ocultarEscribiendo();
+            agregarMensajeTexto('Perdón, no entendí bien eso 😅. ' + preguntaPendiente, 'bot');
+            if (opcionesReintento) agregarRespuestasRapidas(opcionesReintento);
+            return null;
+        }
+    }
+
     function parsePresupuesto(texto) {
         const match = texto.replace(/,/g, '').match(/(\d{3,7})/);
         return match ? Number(match[1]) : null;
@@ -529,7 +566,7 @@
     async function ajustarItinerarioExistente(texto) {
         mostrarEscribiendo();
         try {
-            ctx.itinerario = await bgoiaGenerarItinerario(ctx.destino, ctx.opcionElegida.titulo, ctx.intereses, texto);
+            ctx.itinerario = await bgoiaGenerarItinerario(ctx.destino, ctx.opcionElegida.titulo, ctx.intereses, texto, ctx.diasViaje);
             ocultarEscribiendo();
             agregarMensajeTexto('Ajusté el itinerario:', 'bot');
             renderItinerario(ctx.itinerario);
@@ -621,7 +658,7 @@
                 // Sin vuelo: todo el presupuesto se destina a hospedaje,
                 // así que buscamos hoteles directamente.
                 const checkin = fechaFuturaISO(30);
-                const checkout = fechaFuturaISO(33);
+                const checkout = fechaFuturaISO(30 + ctx.diasViaje);
                 ctx.hoteles = await bgoiaBuscarHoteles(ctx.destino, checkin, checkout, presupuesto);
                 ocultarEscribiendo();
                 agregarMensajeTexto('Con ese presupuesto, aquí tienes opciones de hospedaje:', 'bot');
@@ -641,7 +678,7 @@
         try {
             const restante = ctx.presupuesto - ctx.vueloElegido.precio;
             const checkin = fechaFuturaISO(30);
-            const checkout = fechaFuturaISO(33);
+            const checkout = fechaFuturaISO(30 + ctx.diasViaje);
             ctx.hoteles = await bgoiaBuscarHoteles(ctx.destino, checkin, checkout, restante);
             ocultarEscribiendo();
             agregarMensajeTexto('Con lo que te queda de presupuesto, aquí tienes algunas opciones de hospedaje:', 'bot');
@@ -773,6 +810,9 @@
                     if (resultado.presupuesto_detectado) {
                         ctx.presupuestoPrellenado = resultado.presupuesto_detectado;
                     }
+                    if (resultado.duracion_dias_detectada) {
+                        ctx.diasPrellenados = Number(resultado.duracion_dias_detectada);
+                    }
                     // Si fue "fuera_de_tema", nos quedamos en CHARLA_LIBRE:
                     // el propio texto de "respuesta" ya redirige con amabilidad.
                     // Esto SOLO avanza cuando el usuario lo pide explícitamente
@@ -833,16 +873,31 @@
             }
 
             case 'ESPERANDO_OPCION': {
-                const idx = parseOpcionElegida(texto, ctx.opciones);
-                await elegirOpcionDestino(idx, false);
+                if (pareceDudaOComentario(texto)) {
+                    const preguntaPendiente = '¿Cuál de las 3 opciones prefieres?';
+                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
+                    if (resultado) {
+                        agregarMensajeTexto(preguntaPendiente, 'bot');
+                        renderOpcionesDestino(ctx.opciones);
+                    }
+                } else {
+                    const idx = parseOpcionElegida(texto, ctx.opciones);
+                    await elegirOpcionDestino(idx, false);
+                }
                 break;
             }
 
             case 'ESPERANDO_INTERESES': {
                 ctx.intereses = texto;
+                // Si en la charla libre ya dijo cuántos días viaja, se respeta
+                // esa duración en vez de generar siempre 3 días por default.
+                if (ctx.diasPrellenados) {
+                    ctx.diasViaje = ctx.diasPrellenados;
+                    ctx.diasPrellenados = null;
+                }
                 mostrarEscribiendo();
                 try {
-                    ctx.itinerario = await bgoiaGenerarItinerario(ctx.destino, ctx.opcionElegida.titulo, ctx.intereses);
+                    ctx.itinerario = await bgoiaGenerarItinerario(ctx.destino, ctx.opcionElegida.titulo, ctx.intereses, "", ctx.diasViaje);
                     ocultarEscribiendo();
                     agregarMensajeTexto('Este sería tu itinerario:', 'bot');
                     renderItinerario(ctx.itinerario);
@@ -870,6 +925,16 @@
                         agregarMensajeTexto('¡Perfecto! ¿Desde qué ciudad viajas? (ej: Guadalajara, CDMX, Monterrey)', 'bot');
                         ctx.step = 'ESPERANDO_ORIGEN';
                     }
+                } else if (pareceDudaOComentario(texto)) {
+                    // Antes de asumir que es una edición al itinerario,
+                    // primero contestamos si es una pregunta/comentario y
+                    // volvemos a preguntar sin perder el itinerario ya armado.
+                    const preguntaPendiente = '¿Te parece bien este itinerario?';
+                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
+                    if (resultado) {
+                        agregarMensajeTexto(preguntaPendiente, 'bot');
+                        agregarBotonesConfirmarItinerario();
+                    }
                 } else {
                     await ajustarItinerarioExistente(texto);
                 }
@@ -877,22 +942,79 @@
             }
 
             case 'ESPERANDO_ORIGEN': {
-                await processarOrigen(texto);
+                // Si parece pregunta/comentario, o si trae un número (probable
+                // presupuesto mezclado, ej: "salgo de CDMX y tengo 15000"),
+                // usamos la interpretación libre en vez de tomar el mensaje
+                // completo como si fuera el nombre de una ciudad.
+                if (pareceDudaOComentario(texto) || parsePresupuesto(texto)) {
+                    const preguntaPendiente = '¿Desde qué ciudad viajas? (ej: Guadalajara, CDMX, Monterrey)';
+                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
+                    if (resultado && resultado.origen) {
+                        await processarOrigen(resultado.origen);
+                    } else if (resultado) {
+                        agregarMensajeTexto(preguntaPendiente, 'bot');
+                    }
+                } else {
+                    await processarOrigen(texto);
+                }
                 break;
             }
 
             case 'ESPERANDO_PRESUPUESTO': {
                 const presupuesto = parsePresupuesto(texto);
-                if (!presupuesto) {
-                    agregarMensajeTexto('¿Me confirmas el monto en números? Ej: 10000', 'bot');
+                if (presupuesto) {
+                    await processarPresupuesto(presupuesto);
                     break;
                 }
-                await processarPresupuesto(presupuesto);
+                const preguntaPendiente = '¿Me confirmas tu presupuesto aproximado en números? Ej: 10000';
+                const opcionesReintento = [
+                    { label: '$8,000', texto: '8000' },
+                    { label: '$15,000', texto: '15000' },
+                    { label: '$25,000', texto: '25000' },
+                    { label: '$40,000+', texto: '40000' },
+                ];
+                const resultado = await manejarEntradaConfusa(texto, preguntaPendiente, opcionesReintento);
+                if (resultado && resultado.presupuesto) {
+                    await processarPresupuesto(resultado.presupuesto);
+                } else if (resultado) {
+                    agregarMensajeTexto(preguntaPendiente, 'bot');
+                    agregarRespuestasRapidas(opcionesReintento);
+                }
                 break;
             }
 
-            case 'ESPERANDO_VUELO':
-            case 'ESPERANDO_HOTEL':
+            case 'ESPERANDO_VUELO': {
+                if (pareceDudaOComentario(texto)) {
+                    const preguntaPendiente = 'Elige uno de los vuelos de arriba para continuar 👆';
+                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
+                    if (resultado) {
+                        agregarMensajeTexto(preguntaPendiente, 'bot');
+                        renderVuelos(ctx.vuelos);
+                    }
+                } else {
+                    // No parece duda/pregunta: probablemente sí quiere
+                    // empezar un viaje nuevo, se permite reiniciar.
+                    ctx.step = 'INICIO';
+                    await procesarPaso(texto);
+                }
+                break;
+            }
+
+            case 'ESPERANDO_HOTEL': {
+                if (pareceDudaOComentario(texto)) {
+                    const preguntaPendiente = 'Elige uno de los hoteles de arriba para continuar 👆';
+                    const resultado = await manejarEntradaConfusa(texto, preguntaPendiente);
+                    if (resultado) {
+                        agregarMensajeTexto(preguntaPendiente, 'bot');
+                        renderHoteles(ctx.hoteles);
+                    }
+                } else {
+                    ctx.step = 'INICIO';
+                    await procesarPaso(texto);
+                }
+                break;
+            }
+
             case 'FINALIZADO':
             default: {
                 // Si el usuario escribe algo libre en estos pasos, lo tratamos como

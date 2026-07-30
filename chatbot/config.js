@@ -28,7 +28,11 @@ const BGOIA_CONFIG = {
         AEROPUERTO: 300,
         EVALUAR_VIAJE: 250,
         RAG: 400,
-        CHARLA: 300
+        CHARLA: 300,
+        // Solo se usa cuando el usuario NO respondió lo que se esperaba en
+        // un paso del flujo formal (pregunta algo, mezcla varios datos,
+        // etc.). En el caso normal (responde bien) no se gasta este tope.
+        INTERPRETAR_LIBRE: 350
     },
 };
 

@@ -105,14 +105,15 @@ Los precios son montos en pesos mexicanos (MXN), números enteros sin símbolos.
     return bgoiaAskGemini(prompt, BGOIA_CONFIG.GEMINI_MAX_TOKENS.OPCIONES_DESTINO);
 }
 
-async function bgoiaGenerarItinerario(destino, opcionElegida, intereses, feedback = "") {
+async function bgoiaGenerarItinerario(destino, opcionElegida, intereses, feedback = "", dias = 3) {
     const prompt = `
 Eres el asistente de viajes de Book&Go IA. El usuario eligió viajar a "${destino}",
 específicamente la experiencia: "${opcionElegida}".
 Sus intereses son: "${intereses}".
 ${feedback ? `Ajusta considerando este comentario del usuario: "${feedback}".` : ""}
 
-Genera un itinerario de 3 días. Responde SOLO con este JSON exacto, sin texto adicional:
+Genera un itinerario de EXACTAMENTE ${dias} día(s) (ni más ni menos, el usuario ya
+definió cuánto dura su viaje). Responde SOLO con este JSON exacto, sin texto adicional:
 {
   "dias": [
     {
@@ -192,7 +193,8 @@ Responde SOLO con este JSON exacto, sin texto adicional:
   "listo_para_reservar": false,
   "resumen_preferencias": "resumen corto (una frase) de destino/estilo/intereses detectados hasta ahora en TODA la conversación, o cadena vacía si aún no hay nada claro",
   "origen_detectado": "ciudad de origen SOLO si el usuario la dijo explícitamente en algún mensaje (ej: 'salgo de Chimalhuacán', 'vivo en Monterrey'), o cadena vacía si no la mencionó",
-  "presupuesto_detectado": "monto en pesos mexicanos (número entero, sin símbolos) SOLO si el usuario dio una cifra explícita para su viaje, o null si no dio ninguna"
+  "presupuesto_detectado": "monto en pesos mexicanos (número entero, sin símbolos) SOLO si el usuario dio una cifra explícita para su viaje, o null si no dio ninguna",
+  "duracion_dias_detectada": "número de días que el usuario dijo que dura su viaje (ej: 'viajo dos días' -> 2), SOLO si lo dijo explícitamente, o null si no lo mencionó"
 }
 
 "fuera_de_tema" debe ser true SOLO si el mensaje no tiene nada que ver con
@@ -206,8 +208,49 @@ destino.
 "origen_detectado" y "presupuesto_detectado" son para no volver a preguntar
 algo que el usuario ya dijo: solo se llenan si lo mencionó de forma
 explícita y clara, nunca inventados ni adivinados.
+"duracion_dias_detectada" es igual: solo si dijo un número de días concreto
+para su viaje (no una fecha, no "un rato", solo un número claro de días).
 `;
     return bgoiaAskGemini(prompt, BGOIA_CONFIG.GEMINI_MAX_TOKENS.CHARLA);
+}
+
+// --------------------------------------------------------
+// Red de seguridad para usuarios que no responden lo que se les pregunta
+// (hacen otra pregunta, mezclan varios datos en un mensaje, escriben algo
+// ambiguo, etc.). Solo se llama cuando el parser simple del paso actual
+// ya detectó que el mensaje no encaja con lo esperado, así que NO se gasta
+// en el caso normal (usuario que sí responde bien).
+// --------------------------------------------------------
+async function bgoiaInterpretarLibre(contextoConocido, mensajeUsuario) {
+    const prompt = `
+Eres el asistente de viajes de Book&Go IA. Un usuario está en medio de armar su
+viaje (contexto ya conocido de la conversación: "${contextoConocido || '(sin contexto previo)'}"),
+pero acaba de escribir algo que no es una respuesta directa y clara a lo que
+se le preguntaba (puede ser una pregunta suya, un comentario, o varios datos
+mezclados en un solo mensaje).
+
+MENSAJE DEL USUARIO: "${mensajeUsuario}"
+
+Tu trabajo:
+1. Si el mensaje es una pregunta o comentario que merece respuesta (ej: "¿cuánto
+   cuesta un taxi ahí?", "¿está bien esa zona?"), contesta breve y útil (máximo
+   2 frases). Si no es necesario responder nada, deja "respuesta" vacío.
+2. Extrae cualquier dato de viaje que el usuario haya mencionado en ESTE
+   mensaje (aunque no sea lo que se le preguntaba): ciudad de origen,
+   presupuesto en pesos mexicanos, destino, número de días. Solo si lo dice
+   explícitamente, nunca lo inventes.
+
+Responde SOLO con este JSON exacto, sin texto adicional:
+{
+  "respuesta": "tu respuesta breve si aplica, o cadena vacía",
+  "origen": "ciudad si la menciona, o cadena vacía",
+  "presupuesto": 0,
+  "destino": "destino si menciona uno, o cadena vacía",
+  "dias": 0
+}
+Usa 0 en "presupuesto" o "dias" si no los menciona (no null, no texto).
+`;
+    return bgoiaAskGemini(prompt, BGOIA_CONFIG.GEMINI_MAX_TOKENS.INTERPRETAR_LIBRE);
 }
 
 // --------------------------------------------------------
