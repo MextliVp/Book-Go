@@ -66,6 +66,13 @@
         vueloElegido: null,
         hoteles: [],
         hotelElegido: null,
+        // Datos que el usuario ya dio en la charla libre (ej: "desde
+        // Chimalhuacán, presupuesto de $20,000"). Si ya los mencionó, el
+        // flujo formal no debe volver a preguntarlos: por eso viven fuera
+        // del reinicio de reiniciarContextoDeViaje() y solo se limpian
+        // cuando se consumen (ver processarOrigen/processarPresupuesto).
+        origenPrellenado: null,
+        presupuestoPrellenado: null,
     };
 
     // Reinicia los campos de un viaje anterior al empezar uno nuevo, para
@@ -535,6 +542,98 @@
         }
     }
 
+    // Evalúa el trayecto origen->destino y sigue el flujo. Se usa tanto
+    // cuando el usuario responde "¿Desde dónde viajas?" como cuando ya lo
+    // había dicho antes en la charla libre (ctx.origenPrellenado).
+    async function processarOrigen(textoOrigen) {
+        ctx.origen = limpiarOrigen(textoOrigen);
+        mostrarEscribiendo();
+        try {
+            // Antes de buscar aeropuerto/vuelos, preguntamos si el
+            // trayecto realmente los necesita. Esto evita el caso de
+            // pedir "ir a Tepito desde CDMX": son la misma ciudad, así
+            // que buscar vuelos ahí solo desperdicia una consulta.
+            const evaluacion = await bgoiaEvaluarViaje(ctx.origen, ctx.destino);
+            ctx.requiereVuelo = evaluacion.requiere_vuelo !== false;
+
+            if (ctx.requiereVuelo) {
+                ctx.aeropuerto = await bgoiaObtenerAeropuertoCercano(ctx.origen, ctx.destino);
+                ocultarEscribiendo();
+                const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' +
+                    encodeURIComponent(ctx.aeropuerto.aeropuerto_nombre + ' ' + ctx.aeropuerto.ciudad);
+                agregarBloqueHTML(`
+                    <p>Tu aeropuerto más conveniente es <strong>${ctx.aeropuerto.aeropuerto_nombre} (${ctx.aeropuerto.aeropuerto_codigo_iata})</strong> en ${ctx.aeropuerto.ciudad}.</p>
+                    <p>${ctx.aeropuerto.consejo}</p>
+                    <a href="${mapsUrl}" target="_blank" rel="noopener" class="bgoia-map-link">📍 Ver en Google Maps</a>
+                `);
+            } else {
+                ctx.trasladoLocal = evaluacion.recomendacion || 'Puedes llegar por tierra, no necesitas volar.';
+                ocultarEscribiendo();
+                agregarBloqueHTML(`
+                    <p>🚗 ${ctx.destino} está lo bastante cerca de ${ctx.origen} como para no necesitar vuelo.</p>
+                    <p>${ctx.trasladoLocal}</p>
+                `);
+            }
+
+            if (ctx.presupuestoPrellenado) {
+                // También nos dijo su presupuesto en la charla libre: nos
+                // saltamos la pregunta y buscamos vuelos/hotel directo.
+                const presupuesto = ctx.presupuestoPrellenado;
+                ctx.presupuestoPrellenado = null;
+                agregarMensajeTexto(`Y ya sé que tu presupuesto es de ${formatoMoneda(presupuesto)}, buscando...`, 'bot');
+                await processarPresupuesto(presupuesto);
+            } else {
+                agregarMensajeTexto(
+                    ctx.requiereVuelo
+                        ? '¿Cuál es tu presupuesto aproximado para vuelo, hospedaje y actividades?'
+                        : '¿Cuál es tu presupuesto aproximado para hospedaje y actividades (sin vuelo)?',
+                    'bot'
+                );
+                agregarRespuestasRapidas([
+                    { label: '$8,000', texto: '8000' },
+                    { label: '$15,000', texto: '15000' },
+                    { label: '$25,000', texto: '25000' },
+                    { label: '$40,000+', texto: '40000' },
+                ]);
+                ctx.step = 'ESPERANDO_PRESUPUESTO';
+            }
+        } catch (err) {
+            ocultarEscribiendo();
+            agregarMensajeTexto('No pude evaluar tu traslado: ' + err.message, 'bot');
+        }
+    }
+
+    // Busca vuelos (o directo hoteles, si no se necesita volar) con el
+    // presupuesto ya conocido, venga de la pregunta formal o de la charla
+    // libre.
+    async function processarPresupuesto(presupuesto) {
+        ctx.presupuesto = presupuesto;
+        mostrarEscribiendo();
+        try {
+            if (ctx.requiereVuelo) {
+                const fecha = fechaFuturaISO(30);
+                ctx.vuelos = await bgoiaBuscarVuelos(ctx.origen, ctx.destino, fecha, presupuesto);
+                ocultarEscribiendo();
+                agregarMensajeTexto('Estos son los vuelos disponibles:', 'bot');
+                renderVuelos(ctx.vuelos);
+                ctx.step = 'ESPERANDO_VUELO';
+            } else {
+                // Sin vuelo: todo el presupuesto se destina a hospedaje,
+                // así que buscamos hoteles directamente.
+                const checkin = fechaFuturaISO(30);
+                const checkout = fechaFuturaISO(33);
+                ctx.hoteles = await bgoiaBuscarHoteles(ctx.destino, checkin, checkout, presupuesto);
+                ocultarEscribiendo();
+                agregarMensajeTexto('Con ese presupuesto, aquí tienes opciones de hospedaje:', 'bot');
+                renderHoteles(ctx.hoteles);
+                ctx.step = 'ESPERANDO_HOTEL';
+            }
+        } catch (err) {
+            ocultarEscribiendo();
+            agregarMensajeTexto('No pude buscar opciones para tu viaje: ' + err.message, 'bot');
+        }
+    }
+
     async function elegirVuelo(index) {
         ctx.vueloElegido = ctx.vuelos[index];
         agregarMensajeTexto(`Elijo el vuelo de ${ctx.vueloElegido.aerolinea} (${formatoMoneda(ctx.vueloElegido.precio)})`, 'user');
@@ -668,9 +767,20 @@
                     if (resultado.resumen_preferencias) {
                         ctx.resumenPreferencias = resultado.resumen_preferencias;
                     }
+                    if (resultado.origen_detectado) {
+                        ctx.origenPrellenado = resultado.origen_detectado;
+                    }
+                    if (resultado.presupuesto_detectado) {
+                        ctx.presupuestoPrellenado = resultado.presupuesto_detectado;
+                    }
                     // Si fue "fuera_de_tema", nos quedamos en CHARLA_LIBRE:
                     // el propio texto de "respuesta" ya redirige con amabilidad.
+                    // Esto SOLO avanza cuando el usuario lo pide explícitamente
+                    // (o Gemini detecta intención clara): la charla libre puede
+                    // seguir dando itinerarios y detalle todo lo que haga falta
+                    // sin que eso dispare la reserva por sí solo.
                     if (intencionExplicita || resultado.listo_para_reservar) {
+                        agregarMensajeTexto('¡Va! Busco vuelos y hotel y te armo la reserva 😊', 'bot');
                         const contextoDestino = construirContextoDestino();
                         ctx.step = 'INICIO';
                         await procesarPaso(contextoDestino);
@@ -687,15 +797,37 @@
                 mostrarEscribiendo();
                 try {
                     const resultado = await bgoiaGenerarOpcionesDestino(texto);
+                    // Guardamos destino/opciones pero NO los mostramos todavía:
+                    // Gemini puede haber inferido el destino (p. ej. si antes se
+                    // sugirieron varios y el usuario nunca eligió uno), así que
+                    // primero confirmamos con el usuario en vez de asumir que
+                    // ya aceptó ese lugar.
                     ctx.destino = resultado.destino;
                     ctx.opciones = resultado.opciones;
                     ocultarEscribiendo();
-                    agregarMensajeTexto(`Para tu viaje a ${ctx.destino}, aquí tienes 3 opciones:`, 'bot');
-                    renderOpcionesDestino(ctx.opciones);
-                    ctx.step = 'ESPERANDO_OPCION';
+                    agregarMensajeTexto(`Entendí que te gustaría explorar ${ctx.destino}. ¿Armamos tu viaje ahí?`, 'bot');
+                    agregarRespuestasRapidas([
+                        { label: `Sí, ${ctx.destino}`, texto: 'sí' },
+                        { label: 'No, otro destino', texto: 'no' },
+                    ]);
+                    ctx.step = 'CONFIRMANDO_DESTINO';
                 } catch (err) {
                     ocultarEscribiendo();
                     agregarMensajeTexto('Ups, tuve un problema generando opciones: ' + err.message, 'bot');
+                }
+                break;
+            }
+
+            case 'CONFIRMANDO_DESTINO': {
+                if (parseAfirmacion(texto)) {
+                    agregarMensajeTexto(`Para tu viaje a ${ctx.destino}, aquí tienes 3 opciones:`, 'bot');
+                    renderOpcionesDestino(ctx.opciones);
+                    ctx.step = 'ESPERANDO_OPCION';
+                } else {
+                    agregarMensajeTexto('Sin problema, ¿a qué destino te gustaría ir entonces?', 'bot');
+                    // El siguiente mensaje libre del usuario se toma como el
+                    // destino real y se vuelve a generar todo desde cero.
+                    ctx.step = 'INICIO';
                 }
                 break;
             }
@@ -726,8 +858,18 @@
 
             case 'CONFIRMANDO_ITINERARIO': {
                 if (parseAfirmacion(texto)) {
-                    agregarMensajeTexto('¡Perfecto! ¿Desde qué ciudad viajas? (ej: Guadalajara, CDMX, Monterrey)', 'bot');
-                    ctx.step = 'ESPERANDO_ORIGEN';
+                    if (ctx.origenPrellenado) {
+                        // Ya nos dijo desde dónde sale en la charla libre (ej:
+                        // "desde Chimalhuacón"): no se lo volvemos a preguntar,
+                        // solo confirmamos que lo tomamos en cuenta y seguimos.
+                        const origen = ctx.origenPrellenado;
+                        ctx.origenPrellenado = null;
+                        agregarMensajeTexto(`Ya sé que sales de ${origen}, dame un momento.`, 'bot');
+                        await processarOrigen(origen);
+                    } else {
+                        agregarMensajeTexto('¡Perfecto! ¿Desde qué ciudad viajas? (ej: Guadalajara, CDMX, Monterrey)', 'bot');
+                        ctx.step = 'ESPERANDO_ORIGEN';
+                    }
                 } else {
                     await ajustarItinerarioExistente(texto);
                 }
@@ -735,47 +877,7 @@
             }
 
             case 'ESPERANDO_ORIGEN': {
-                ctx.origen = limpiarOrigen(texto);
-                mostrarEscribiendo();
-                try {
-                    // Antes de buscar aeropuerto/vuelos, preguntamos si el
-                    // trayecto realmente los necesita. Esto evita el caso de
-                    // pedir "ir a Tepito desde CDMX": son la misma ciudad, así
-                    // que buscar vuelos ahí solo desperdicia una consulta.
-                    const evaluacion = await bgoiaEvaluarViaje(ctx.origen, ctx.destino);
-                    ctx.requiereVuelo = evaluacion.requiere_vuelo !== false;
-
-                    if (ctx.requiereVuelo) {
-                        ctx.aeropuerto = await bgoiaObtenerAeropuertoCercano(ctx.origen, ctx.destino);
-                        ocultarEscribiendo();
-                        const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' +
-                            encodeURIComponent(ctx.aeropuerto.aeropuerto_nombre + ' ' + ctx.aeropuerto.ciudad);
-                        agregarBloqueHTML(`
-                            <p>Tu aeropuerto más conveniente es <strong>${ctx.aeropuerto.aeropuerto_nombre} (${ctx.aeropuerto.aeropuerto_codigo_iata})</strong> en ${ctx.aeropuerto.ciudad}.</p>
-                            <p>${ctx.aeropuerto.consejo}</p>
-                            <a href="${mapsUrl}" target="_blank" rel="noopener" class="bgoia-map-link">📍 Ver en Google Maps</a>
-                        `);
-                        agregarMensajeTexto('¿Cuál es tu presupuesto aproximado para vuelo, hospedaje y actividades?', 'bot');
-                    } else {
-                        ctx.trasladoLocal = evaluacion.recomendacion || 'Puedes llegar por tierra, no necesitas volar.';
-                        ocultarEscribiendo();
-                        agregarBloqueHTML(`
-                            <p>🚗 ${ctx.destino} está lo bastante cerca de ${ctx.origen} como para no necesitar vuelo.</p>
-                            <p>${ctx.trasladoLocal}</p>
-                        `);
-                        agregarMensajeTexto('¿Cuál es tu presupuesto aproximado para hospedaje y actividades (sin vuelo)?', 'bot');
-                    }
-                    agregarRespuestasRapidas([
-                        { label: '$8,000', texto: '8000' },
-                        { label: '$15,000', texto: '15000' },
-                        { label: '$25,000', texto: '25000' },
-                        { label: '$40,000+', texto: '40000' },
-                    ]);
-                    ctx.step = 'ESPERANDO_PRESUPUESTO';
-                } catch (err) {
-                    ocultarEscribiendo();
-                    agregarMensajeTexto('No pude evaluar tu traslado: ' + err.message, 'bot');
-                }
+                await processarOrigen(texto);
                 break;
             }
 
@@ -785,31 +887,7 @@
                     agregarMensajeTexto('¿Me confirmas el monto en números? Ej: 10000', 'bot');
                     break;
                 }
-                ctx.presupuesto = presupuesto;
-                mostrarEscribiendo();
-                try {
-                    if (ctx.requiereVuelo) {
-                        const fecha = fechaFuturaISO(30);
-                        ctx.vuelos = await bgoiaBuscarVuelos(ctx.origen, ctx.destino, fecha, presupuesto);
-                        ocultarEscribiendo();
-                        agregarMensajeTexto('Estos son los vuelos disponibles:', 'bot');
-                        renderVuelos(ctx.vuelos);
-                        ctx.step = 'ESPERANDO_VUELO';
-                    } else {
-                        // Sin vuelo: todo el presupuesto se destina a hospedaje,
-                        // así que buscamos hoteles directamente.
-                        const checkin = fechaFuturaISO(30);
-                        const checkout = fechaFuturaISO(33);
-                        ctx.hoteles = await bgoiaBuscarHoteles(ctx.destino, checkin, checkout, presupuesto);
-                        ocultarEscribiendo();
-                        agregarMensajeTexto('Con ese presupuesto, aquí tienes opciones de hospedaje:', 'bot');
-                        renderHoteles(ctx.hoteles);
-                        ctx.step = 'ESPERANDO_HOTEL';
-                    }
-                } catch (err) {
-                    ocultarEscribiendo();
-                    agregarMensajeTexto('No pude buscar opciones para tu viaje: ' + err.message, 'bot');
-                }
+                await processarPresupuesto(presupuesto);
                 break;
             }
 

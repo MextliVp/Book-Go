@@ -190,7 +190,9 @@ Responde SOLO con este JSON exacto, sin texto adicional:
   "respuesta": "tu respuesta breve, cálida y natural en español (máximo 2-3 frases)",
   "fuera_de_tema": false,
   "listo_para_reservar": false,
-  "resumen_preferencias": "resumen corto (una frase) de destino/estilo/intereses detectados hasta ahora en TODA la conversación, o cadena vacía si aún no hay nada claro"
+  "resumen_preferencias": "resumen corto (una frase) de destino/estilo/intereses detectados hasta ahora en TODA la conversación, o cadena vacía si aún no hay nada claro",
+  "origen_detectado": "ciudad de origen SOLO si el usuario la dijo explícitamente en algún mensaje (ej: 'salgo de Chimalhuacán', 'vivo en Monterrey'), o cadena vacía si no la mencionó",
+  "presupuesto_detectado": "monto en pesos mexicanos (número entero, sin símbolos) SOLO si el usuario dio una cifra explícita para su viaje, o null si no dio ninguna"
 }
 
 "fuera_de_tema" debe ser true SOLO si el mensaje no tiene nada que ver con
@@ -201,6 +203,9 @@ sin regañar al usuario.
 "listo_para_reservar" debe ser true si el usuario ya expresó intención
 clara de reservar, armar un itinerario, o ver opciones concretas de un
 destino.
+"origen_detectado" y "presupuesto_detectado" son para no volver a preguntar
+algo que el usuario ya dijo: solo se llenan si lo mencionó de forma
+explícita y clara, nunca inventados ni adivinados.
 `;
     return bgoiaAskGemini(prompt, BGOIA_CONFIG.GEMINI_MAX_TOKENS.CHARLA);
 }
