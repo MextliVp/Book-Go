@@ -4,6 +4,7 @@
     ".write": false,
 
     "usuarios": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'",
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('rol').val() === 'admin')",
         ".write": "auth != null && auth.uid === $uid",
@@ -24,6 +25,8 @@
     },
 
     "reservas": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'",
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('rol').val() === 'admin')",
         ".write": "auth != null && auth.uid === $uid"
@@ -31,6 +34,15 @@
     },
 
     "rag_logs": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('rol').val() === 'admin')",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "conversaciones": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'",
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('rol').val() === 'admin')",
         ".write": "auth != null && auth.uid === $uid"

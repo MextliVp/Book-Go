@@ -8,41 +8,148 @@
 // Mientras tanto, si la llamada real falla, se usan datos simulados
 // para que el flujo de la conversación nunca se quede trabado.
 
-function bgoiaHeadersRapidAPI(host) {
-    return {
-        "X-RapidAPI-Key": BGOIA_CONFIG.RAPIDAPI_KEY,
-        "X-RapidAPI-Host": host
-    };
+// La RAPIDAPI_KEY vive en el servidor (/api/rapidapi.js), nunca en el
+// navegador. Esta función le pide a nuestro propio backend que haga la
+// llamada real a RapidAPI, indicando host + path + query.
+async function bgoiaLlamarRapidAPI(host, path, query) {
+    const res = await fetch('/api/rapidapi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ host, path, query })
+    });
+    if (!res.ok) {
+        // Antes solo se guardaba el código de status (ej. "falló: 500"),
+        // lo cual no dice nada útil en consola. Ahora leemos el cuerpo que
+        // ya manda /api/rapidapi.js (campos "error" y "detalle") para saber
+        // la causa real: key faltante, no suscrito al host, cuota agotada,
+        // etc.
+        let detalle = '';
+        try {
+            const body = await res.json();
+            detalle = body?.error ? ` — ${body.error}` : '';
+            if (body?.detalle) detalle += ` (${JSON.stringify(body.detalle).slice(0, 200)})`;
+        } catch (_e) {
+            // El cuerpo no era JSON válido, nos quedamos solo con el status.
+        }
+        const err = new Error('Llamada a RapidAPI falló: ' + res.status + detalle);
+        err.status = res.status;
+        throw err;
+    }
+    return res.json();
+}
+
+// Pequeña pausa entre peticiones seguidas a RapidAPI: algunos planes
+// gratuitos limitan las peticiones "por segundo", no solo al mes, y
+// nuestro flujo dispara varias llamadas casi al mismo tiempo (aeropuerto
+// de origen, de destino, y luego vuelos). Sin esta pausa se puede recibir
+// un 429 aunque la cuota mensual esté casi intacta.
+function bgoiaEsperar(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Alias/acrónimos comunes en México que la API de vuelos normalmente NO
+// reconoce tal cual (busca nombres de ciudad, no siglas). Los normalizamos
+// antes de buscar.
+const BGOIA_ALIAS_CIUDADES = {
+    'cdmx': 'Ciudad de México',
+    'df': 'Ciudad de México',
+    'ciudad de mexico': 'Ciudad de México',
+    'mexico city': 'Ciudad de México',
+    'gdl': 'Guadalajara',
+    'mty': 'Monterrey',
+    'slp': 'San Luis Potosí',
+    'qro': 'Querétaro',
+    'tj': 'Tijuana',
+    'vsa': 'Villahermosa',
+    'mid': 'Mérida',
+    'cun': 'Cancún',
+    'pue': 'Puebla'
+};
+
+function bgoiaNormalizarCiudad(query) {
+    const clave = query.trim().toLowerCase();
+    return BGOIA_ALIAS_CIUDADES[clave] || query;
 }
 
 // --- 1. Buscar el "skyId" de un aeropuerto/ciudad (Sky-scrapper) ---
+// La API a veces no encuentra resultados con el texto tal cual lo escribió
+// el usuario (acrónimos, nombres cortos, etc.), aunque responda 200 OK.
+// Por eso probamos varias variantes de la búsqueda antes de rendirnos.
 async function bgoiaBuscarSkyId(query) {
-    const url = `https://${BGOIA_CONFIG.SKYSCRAPPER_HOST}/api/v1/flights/searchAirport?query=${encodeURIComponent(query)}&locale=es-MX`;
-    const res = await fetch(url, { headers: bgoiaHeadersRapidAPI(BGOIA_CONFIG.SKYSCRAPPER_HOST) });
-    if (!res.ok) throw new Error("searchAirport falló: " + res.status);
-    const data = await res.json();
-    const primero = data?.data?.[0];
-    if (!primero) throw new Error("No se encontró aeropuerto para: " + query);
-    return { skyId: primero.skyId, entityId: primero.entityId };
+    const normalizado = bgoiaNormalizarCiudad(query);
+    // Ya no probamos el texto "original" además del normalizado (si son
+    // iguales no aporta nada) para no duplicar peticiones y gastar cuota
+    // de más en la API. Como mucho: normalizado, y si no tiene coma, una
+    // variante con ", México" agregado.
+    const intentos = [normalizado];
+    if (!/,/.test(normalizado)) intentos.push(normalizado + ', México');
+
+    let ultimoError = null;
+    for (let i = 0; i < intentos.length; i++) {
+        const q = intentos[i];
+        if (i > 0) await bgoiaEsperar(500);
+        try {
+            const data = await bgoiaLlamarRapidAPI(
+                BGOIA_CONFIG.SKYSCRAPPER_HOST,
+                '/api/v1/flights/searchAirport',
+                { query: q, locale: 'en-US' }
+            );
+            const primero = data?.data?.[0];
+            if (primero) {
+                return { skyId: primero.skyId, entityId: primero.entityId };
+            }
+            console.warn(`🔎 searchAirport("${q}") respondió 200 OK pero sin resultados.`);
+            ultimoError = new Error("No se encontró aeropuerto para: " + q);
+        } catch (err) {
+            console.warn(`🔎 searchAirport("${q}") falló. ` +
+                (err.status === 429 ? 'Límite de peticiones alcanzado (puede ser por segundo/minuto, o cuota mensual).' :
+                 err.status === 403 ? 'Probablemente la key no está suscrita a Sky-scrapper.' :
+                 'Revisa la respuesta completa en la pestaña Network de DevTools.'));
+            ultimoError = err;
+            // Si ya nos limitaron (429), seguir intentando con más
+            // variantes solo desperdicia las peticiones que quedan;
+            // mejor cortar aquí y caer directo a datos simulados.
+            if (err.status === 429) break;
+        }
+    }
+    throw ultimoError || new Error("No se encontró aeropuerto para: " + query);
 }
 
 // --- 2. Buscar vuelos ---
 async function bgoiaBuscarVuelos(origenQuery, destinoQuery, fechaISO, presupuesto) {
     try {
         const origen = await bgoiaBuscarSkyId(origenQuery);
+        await bgoiaEsperar(500);
         const destino = await bgoiaBuscarSkyId(destinoQuery);
+        await bgoiaEsperar(500);
 
-        const url = `https://${BGOIA_CONFIG.SKYSCRAPPER_HOST}/api/v1/flights/searchFlights` +
-            `?originSkyId=${origen.skyId}&destinationSkyId=${destino.skyId}` +
-            `&originEntityId=${origen.entityId}&destinationEntityId=${destino.entityId}` +
-            `&date=${fechaISO}&adults=1&currency=MXN&market=es-MX&locale=es-MX`;
-
-        const res = await fetch(url, { headers: bgoiaHeadersRapidAPI(BGOIA_CONFIG.SKYSCRAPPER_HOST) });
-        if (!res.ok) throw new Error("searchFlights falló: " + res.status);
-        const data = await res.json();
+        const data = await bgoiaLlamarRapidAPI(
+            BGOIA_CONFIG.SKYSCRAPPER_HOST,
+            '/api/v1/flights/searchFlights',
+            {
+                originSkyId: origen.skyId,
+                destinationSkyId: destino.skyId,
+                originEntityId: origen.entityId,
+                destinationEntityId: destino.entityId,
+                date: fechaISO,
+                adults: 1,
+                currency: 'MXN',
+                market: 'en-US',
+                locale: 'en-US'
+            }
+        );
 
         const itinerarios = data?.data?.itineraries || [];
-        if (itinerarios.length === 0) throw new Error("Sin resultados de vuelos");
+        if (itinerarios.length === 0) {
+            // Diagnóstico: algunas APIs de este estilo devuelven la búsqueda
+            // en estado "incompleto" en la primera llamada (todavía están
+            // consultando aerolíneas) y hay que reintentar. Mostramos la
+            // respuesta cruda para saber si es ese el caso o si de plano no
+            // hay vuelos para esa ruta/fecha.
+            console.warn(`🔎 searchFlights(${origen.skyId}→${destino.skyId}, fecha=${fechaISO}) no trajo itinerarios. status de contexto:`, data?.data?.context?.status || '(sin campo context.status)');
+            console.warn('🔎 Respuesta cruda completa de searchFlights:', data);
+            throw new Error("Sin resultados de vuelos");
+        }
 
         return itinerarios.slice(0, 4).map((it, i) => ({
             id: it.id || `vuelo-${i}`,
@@ -71,10 +178,11 @@ function bgoiaVuelosSimulados(presupuesto) {
 
 // --- 3. Buscar destino de hotel (Booking.com15) ---
 async function bgoiaBuscarDestId(query) {
-    const url = `https://${BGOIA_CONFIG.BOOKING_HOST}/api/v1/hotels/searchDestination?query=${encodeURIComponent(query)}`;
-    const res = await fetch(url, { headers: bgoiaHeadersRapidAPI(BGOIA_CONFIG.BOOKING_HOST) });
-    if (!res.ok) throw new Error("searchDestination falló: " + res.status);
-    const data = await res.json();
+    const data = await bgoiaLlamarRapidAPI(
+        BGOIA_CONFIG.BOOKING_HOST,
+        '/api/v1/hotels/searchDestination',
+        { query }
+    );
     const primero = data?.data?.[0];
     if (!primero) throw new Error("No se encontró destino para: " + query);
     return primero.dest_id;
@@ -85,13 +193,19 @@ async function bgoiaBuscarHoteles(destinoQuery, checkin, checkout, presupuesto) 
     try {
         const destId = await bgoiaBuscarDestId(destinoQuery);
 
-        const url = `https://${BGOIA_CONFIG.BOOKING_HOST}/api/v1/hotels/searchHotels` +
-            `?dest_id=${destId}&search_type=CITY&arrival_date=${checkin}&departure_date=${checkout}` +
-            `&adults=1&currency_code=MXN&locale=es-MX`;
-
-        const res = await fetch(url, { headers: bgoiaHeadersRapidAPI(BGOIA_CONFIG.BOOKING_HOST) });
-        if (!res.ok) throw new Error("searchHotels falló: " + res.status);
-        const data = await res.json();
+        const data = await bgoiaLlamarRapidAPI(
+            BGOIA_CONFIG.BOOKING_HOST,
+            '/api/v1/hotels/searchHotels',
+            {
+                dest_id: destId,
+                search_type: 'CITY',
+                arrival_date: checkin,
+                departure_date: checkout,
+                adults: 1,
+                currency_code: 'MXN',
+                locale: 'es-MX'
+            }
+        );
 
         const hoteles = data?.data?.hotels || [];
         if (hoteles.length === 0) throw new Error("Sin resultados de hoteles");
@@ -105,15 +219,21 @@ async function bgoiaBuscarHoteles(destinoQuery, checkin, checkout, presupuesto) 
 
     } catch (err) {
         console.warn("⚠️ Usando hoteles simulados (revisa tu API de hoteles):", err.message);
-        return bgoiaHotelesSimulados(presupuesto);
+        return bgoiaHotelesSimulados(destinoQuery, presupuesto);
     }
 }
 
-function bgoiaHotelesSimulados(presupuesto) {
+// Antes estos 3 hoteles estaban fijos con nombres de Puerto Vallarta
+// ("Marina Vallarta", "Nuevo Vallarta"), así que se notaba muchísimo el
+// fallback cuando el viaje real era a Cancún, Guadalajara, etc. Ahora el
+// nombre se arma con el destino real, para que aunque sea un dato
+// simulado, al menos sea coherente con el viaje que se está armando.
+function bgoiaHotelesSimulados(destinoQuery, presupuesto) {
+    const nombreDestino = (destinoQuery || '').split(',')[0].trim() || 'el centro';
     const base = [
-        { id: "hsim-1", nombre: "Hotel Marina Vallarta", estrellas: 4, precioPorNoche: 1200 },
-        { id: "hsim-2", nombre: "Boutique Zona Romántica", estrellas: 3, precioPorNoche: 950 },
-        { id: "hsim-3", nombre: "Resort Nuevo Vallarta", estrellas: 5, precioPorNoche: 2100 },
+        { id: "hsim-1", nombre: `Hotel Marina ${nombreDestino}`, estrellas: 4, precioPorNoche: 1200 },
+        { id: "hsim-2", nombre: `Boutique Centro ${nombreDestino}`, estrellas: 3, precioPorNoche: 950 },
+        { id: "hsim-3", nombre: `Resort ${nombreDestino}`, estrellas: 5, precioPorNoche: 2100 },
     ];
     const tope = presupuesto || Infinity;
     return base.filter(h => h.precioPorNoche <= tope);

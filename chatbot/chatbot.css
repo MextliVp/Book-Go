@@ -520,3 +520,41 @@
     border-top: 1px solid #e2e8f0;
     padding-top: 8px;
 }
+
+/* --- Botones de respuesta rápida ---
+   Se muestran como alternativa a escribir, pero el campo de texto sigue
+   activo siempre: el usuario puede tocar un botón o escribir su respuesta
+   libremente, lo que llegue primero. */
+.bgoia-quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.bgoia-quick-btn {
+    border: 1px solid #ddd6fe;
+    background: #f5f3ff;
+    color: #5b21b6;
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.bgoia-quick-btn:hover {
+    background: #ede9fe;
+}
+
+.bgoia-quick-btn.bgoia-quick-selected {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border-color: transparent;
+    color: #fff;
+}
+
+.bgoia-quick-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}

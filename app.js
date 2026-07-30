@@ -9,24 +9,71 @@ import {
     getDatabase, 
     ref, 
     get, 
-    set 
+    set,
+    update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const db = getDatabase();
+
+// Bandera para evitar que el listener global de abajo (onAuthStateChanged)
+// entre en carrera con el flujo de registro. createUserWithEmailAndPassword
+// autentica al usuario de inmediato en el cliente, lo que dispara este
+// listener EN PARALELO mientras el registro todavía está guardando el
+// perfil en la base de datos. Si el listener hace signOut() primero, el
+// set() del registro falla con PERMISSION_DENIED porque ya no hay sesión.
+let registroEnProgreso = false;
 
 // ==========================================
 // 1. CONTROL DE ESTADO GLOBAL Y BLOQUEO VISUAL
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+        // Refrescamos el usuario por si acaba de verificar su correo hace
+        // un momento (en otra pestaña/dispositivo): el objeto "user" que
+        // llega aquí puede tener info en caché.
+        try {
+            await user.reload();
+        } catch (err) {
+            console.warn("No se pudo refrescar el estado del usuario:", err.message);
+        }
+
         // Validamos estrictamente si el usuario ya confirmó su correo
         if (user.emailVerified) {
             console.log("Usuario autenticado y verificado con éxito:", user.email);
-            
+
+            // El campo "emailVerificado" en Realtime Database se guardó en
+            // false al momento del registro y nunca se actualizaba después,
+            // aunque Firebase Authentication (user.emailVerified) sí ya
+            // supiera que el correo estaba confirmado. Lo sincronizamos aquí,
+            // pero SOLO si el usuario ya tiene un perfil guardado (por
+            // ejemplo, alguien que entra con Google sin haberse registrado
+            // antes no debe generar un registro a medias con únicamente
+            // este campo).
+            try {
+                const snap = await get(ref(db, 'usuarios/' + user.uid));
+                if (snap.exists()) {
+                    await update(ref(db, 'usuarios/' + user.uid), { emailVerificado: true });
+                } else {
+                    console.warn("Usuario autenticado (uid: " + user.uid + ") pero sin perfil registrado en la base de datos. No se crea un registro parcial.");
+                }
+            } catch (err) {
+                console.warn("No se pudo sincronizar emailVerificado en la base de datos:", err.message);
+            }
+
             // [AQUÍ TU LÓGICA DE USUARIO LOGUEADO]
             // Ejemplo: ocultar botón de login, mostrar panel de control, etc.
             
         } else {
+            // Si el registro está en curso, es NORMAL que el correo aún no
+            // esté verificado: el propio flujo de registro se encargará de
+            // guardar el perfil y cerrar la sesión en el orden correcto.
+            // Si hacemos signOut() aquí, competimos con ese flujo y el
+            // set() de la base de datos puede fallar con PERMISSION_DENIED.
+            if (registroEnProgreso) {
+                console.log("Usuario recién creado, registro en curso. El listener global no interviene.");
+                return;
+            }
+
             console.log("Usuario detectado pero NO está verificado. Forzando cierre de sesión.");
             
             // Forzamos el cierre de sesión en segundo plano para que no pre-loguee en la UI
@@ -85,6 +132,8 @@ if (btnRegister) {
             return;
         }
 
+        registroEnProgreso = true;
+
         try {
             // --- Paso A: Crear el usuario en Firebase Authentication ---
             const userCredential = await createUserWithEmailAndPassword(auth, emailInput, passwordInput);
@@ -130,6 +179,7 @@ if (btnRegister) {
 
             // --- Paso D: Forzar el cierre inmediato para evitar que se vea logueado por detrás ---
             await signOut(auth);
+            registroEnProgreso = false;
 
             // --- Paso E: Limpieza completa del formulario ---
             document.getElementById("registerName").value = "";
@@ -146,6 +196,7 @@ if (btnRegister) {
             }
 
         } catch (error) {
+            registroEnProgreso = false;
             console.error("Error durante el registro de usuario:", error);
             let msg = "Hubo un error al intentar registrar al usuario.";
             if (error.code === 'auth/email-already-in-use') {
