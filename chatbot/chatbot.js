@@ -429,7 +429,7 @@
     // únicamente de que el modelo lo clasifique bien.
     function pareceIntencionDeReservar(texto) {
         const t = texto.toLowerCase();
-        return /(itinerario|res[eé]rvam?e|reserva(r|lo|la)?|arma(me)?\s+(el|un|mi)?\s*(viaje|plan)|quiero\s+(ir|viajar)\s+a|planea(r|me)?\s+(el|mi)\s+viaje|quiero\s+(ese|este)\s+plan)/.test(t);
+        return /(itinerari\w*|res[eé]rv\w*|arma(me)?\s+(el|un|mi)?\s*(viaje|plan|rut\w*)|creame?\s+(un|una)?\s*(rut\w*|itinerari\w*|plan)|dame\s+(un|una|los?|las?)?\s*(paquet\w*|rut\w*|opciones|itinerari\w*)|quiero\s+(ir|viajar)\s+a|planea(r|me)?\s+(el|mi)\s+viaje|quiero\s+(ese|este)\s+plan|quiero\s+ya|ya\s+quiero)/.test(t);
     }
 
     // Junta el resumen de preferencias + todo lo que dijo el usuario en la
