@@ -235,6 +235,37 @@
         return `https://loremflickr.com/400/240/${encodeURIComponent(keyword)}`;
     }
 
+    // Imagen chica dentro de la charla libre, cuando la respuesta gira en
+    // torno a un lugar concreto (Gemini manda el keyword en inglés).
+    function renderImagenCharla(keyword) {
+        agregarBloqueHTML(`
+            <div class="bgoia-charla-img">
+                <img src="${imagenPara(keyword)}" alt="${keyword}" loading="lazy">
+            </div>
+        `);
+    }
+
+    // Tarjeta de "vista previa" de cómo se vería el viaje, con un botón para
+    // saltar directo al armado formal sin tener que escribirlo. Si el
+    // usuario prefiere seguir platicando, simplemente ignora el botón y
+    // sigue escribiendo normal (el campo de texto nunca se bloquea).
+    function renderSugerenciaArmado(textoSugerencia, contextoDestino) {
+        const wrap = agregarBloqueHTML(`
+            <div class="bgoia-sugerencia">
+                <p>💡 ${textoSugerencia}</p>
+                <button class="bgoia-sugerencia-btn">Sí, armemos el viaje ✅</button>
+            </div>
+        `);
+        const btn = wrap.querySelector('.bgoia-sugerencia-btn');
+        btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            btn.textContent = 'Armando tu viaje...';
+            agregarMensajeTexto('Sí, armemos el viaje', 'user');
+            ctx.step = 'INICIO';
+            await procesarPaso(contextoDestino);
+        });
+    }
+
     function formatoMoneda(n) {
         return '$' + Number(n || 0).toLocaleString('es-MX') + ' MXN';
     }
@@ -802,6 +833,9 @@
                     const resultado = await bgoiaCharlaLibre(ctx.historialCharla, texto);
                     ocultarEscribiendo();
                     agregarMensajeTexto(resultado.respuesta, 'bot');
+                    if (resultado.imagen_keyword) {
+                        renderImagenCharla(resultado.imagen_keyword);
+                    }
                     ctx.historialCharla.push({ rol: 'usuario', texto });
                     ctx.historialCharla.push({ rol: 'asistente', texto: resultado.respuesta });
                     guardarMensajeEnFirebase('usuario', texto);
@@ -834,6 +868,11 @@
                         const contextoDestino = construirContextoDestino();
                         ctx.step = 'INICIO';
                         await procesarPaso(contextoDestino);
+                    } else if (resultado.sugerencia_armado) {
+                        // Aún no hay intención explícita, pero ya sabemos lo
+                        // suficiente para darle una vista previa + un atajo
+                        // (botón) por si le late armar el viaje ya mismo.
+                        renderSugerenciaArmado(resultado.sugerencia_armado, construirContextoDestino());
                     }
                 } catch (err) {
                     ocultarEscribiendo();
