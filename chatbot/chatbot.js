@@ -714,15 +714,20 @@
     // --------------------------------------------------------
     function parecePreguntaRAG(texto) {
         const t = texto.trim().toLowerCase();
-        const esPregunta = t.endsWith('?') || t.startsWith('¿');
+        // OJO: antes cualquier "?" mandaba el mensaje al RAG, aunque fuera
+        // una pregunta normal de viaje (ej. "¿nos funciona esto para 2
+        // personas?"). Eso lo hacía caer siempre en el mensaje genérico
+        // "No encontré información autorizada...", cortando la conversación
+        // de tajo. Ahora SOLO se considera pregunta de RAG si de verdad
+        // toca temas de política/reserva/perfil, sin importar si termina
+        // en signo de interrogación o no.
         const palabrasClave = [
             'politica', 'política', 'reglamento', 'termino', 'término',
             'condicion', 'condición', 'mis reservas', 'mi reserva',
             'mi perfil', 'folio', 'cancelacion', 'cancelación',
             'documento', 'autorizada', 'autorizado'
         ];
-        const tieneClave = palabrasClave.some(p => t.includes(p));
-        return esPregunta || tieneClave;
+        return palabrasClave.some(p => t.includes(p));
     }
 
     async function manejarMensaje(texto) {
@@ -820,7 +825,12 @@
                     // seguir dando itinerarios y detalle todo lo que haga falta
                     // sin que eso dispare la reserva por sí solo.
                     if (intencionExplicita || resultado.listo_para_reservar) {
-                        agregarMensajeTexto('¡Va! Busco vuelos y hotel y te armo la reserva 😊', 'bot');
+                        // No agregamos un mensaje extra aquí: la respuesta de
+                        // Gemini de arriba ya cierra la charla libre de forma
+                        // natural, y el siguiente mensaje del bot lo pone el
+                        // propio paso INICIO (con su typing normal de por
+                        // medio). Meter un tercer mensaje fijo aquí es lo que
+                        // hacía sentir la transición forzada/atropellada.
                         const contextoDestino = construirContextoDestino();
                         ctx.step = 'INICIO';
                         await procesarPaso(contextoDestino);
@@ -833,24 +843,44 @@
             }
 
             case 'INICIO': {
+                // Guardamos el historial de charla ANTES de resetearlo, solo
+                // para poder checar si el usuario ya nombró el destino con
+                // sus propias palabras en algún momento (ver más abajo).
+                const historialAntesDeResetear = ctx.historialCharla.slice();
                 reiniciarContextoDeViaje();
                 mostrarEscribiendo();
                 try {
                     const resultado = await bgoiaGenerarOpcionesDestino(texto);
-                    // Guardamos destino/opciones pero NO los mostramos todavía:
-                    // Gemini puede haber inferido el destino (p. ej. si antes se
-                    // sugirieron varios y el usuario nunca eligió uno), así que
-                    // primero confirmamos con el usuario en vez de asumir que
-                    // ya aceptó ese lugar.
                     ctx.destino = resultado.destino;
                     ctx.opciones = resultado.opciones;
                     ocultarEscribiendo();
-                    agregarMensajeTexto(`Entendí que te gustaría explorar ${ctx.destino}. ¿Armamos tu viaje ahí?`, 'bot');
-                    agregarRespuestasRapidas([
-                        { label: `Sí, ${ctx.destino}`, texto: 'sí' },
-                        { label: 'No, otro destino', texto: 'no' },
-                    ]);
-                    ctx.step = 'CONFIRMANDO_DESTINO';
+
+                    // Gemini puede haber INFERIDO el destino (p. ej. el
+                    // usuario solo dijo "me gusta la fiesta" y nunca escribió
+                    // "Cancún"), así que en ese caso sí vale la pena
+                    // confirmar antes de seguir. Pero si el usuario YA
+                    // escribió el nombre del destino con sus propias palabras
+                    // en algún mensaje anterior, volver a preguntar "¿armamos
+                    // tu viaje ahí?" solo repite algo que él mismo ya dijo y
+                    // se siente forzado/redundante: en ese caso pasamos
+                    // directo a mostrarle las opciones.
+                    const nombreCorto = ctx.destino.split(',')[0].trim().toLowerCase();
+                    const destinoYaMencionadoPorUsuario =
+                        texto.toLowerCase().includes(nombreCorto) ||
+                        historialAntesDeResetear.some(h => h.rol === 'usuario' && h.texto.toLowerCase().includes(nombreCorto));
+
+                    if (destinoYaMencionadoPorUsuario) {
+                        agregarMensajeTexto(`¡Va! Para tu viaje a ${ctx.destino}, aquí tienes 3 opciones:`, 'bot');
+                        renderOpcionesDestino(ctx.opciones);
+                        ctx.step = 'ESPERANDO_OPCION';
+                    } else {
+                        agregarMensajeTexto(`Entendí que te gustaría explorar ${ctx.destino}. ¿Armamos tu viaje ahí?`, 'bot');
+                        agregarRespuestasRapidas([
+                            { label: `Sí, ${ctx.destino}`, texto: 'sí' },
+                            { label: 'No, otro destino', texto: 'no' },
+                        ]);
+                        ctx.step = 'CONFIRMANDO_DESTINO';
+                    }
                 } catch (err) {
                     ocultarEscribiendo();
                     agregarMensajeTexto('Ups, tuve un problema generando opciones: ' + err.message, 'bot');
